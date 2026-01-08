@@ -139,7 +139,7 @@ export async function fetchScript(id: string) {
     if (typeof data.content === 'string') {
         try {
             data.content = JSON.parse(data.content)
-        } catch (_e) {
+        } catch {
             // Fallback for legacy text scripts
             data.content = [{ visual: "Legacy Content", audio: data.content }]
         }
