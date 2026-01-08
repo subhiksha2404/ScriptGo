@@ -7,6 +7,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 // Use the model the user explicitly set in their last edit
 const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' })
 
+interface ScriptRow {
+    visual: string
+    audio: string
+}
+
 export async function generateScript(formData: {
     platform: string
     topic: string
@@ -72,7 +77,7 @@ CRITICAL: Return ONLY the JSON object. No extra text.`
 export async function saveScript(data: {
     id?: string
     title: string
-    content: any
+    content: ScriptRow[]
     platform: string
     topic: string
     tone: string
@@ -134,7 +139,7 @@ export async function fetchScript(id: string) {
     if (typeof data.content === 'string') {
         try {
             data.content = JSON.parse(data.content)
-        } catch (e) {
+        } catch (_e) {
             // Fallback for legacy text scripts
             data.content = [{ visual: "Legacy Content", audio: data.content }]
         }
