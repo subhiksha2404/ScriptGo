@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================
+   🌑 DARK AESTHETIC THEME
+   ================================ */
+
+:root {
+  --background: 220 25% 6%;
+  --foreground: 0 0% 96%;
+
+  --card: 220 22% 10%;
+  --card-foreground: 0 0% 96%;
+
+  --popover: 220 22% 10%;
+  --popover-foreground: 0 0% 96%;
+
+  --primary: 220 90% 60%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 220 18% 14%;
+  --secondary-foreground: 0 0% 96%;
+
+  --muted: 220 18% 14%;
+  --muted-foreground: 220 10% 65%;
+
+  --accent: 260 85% 65%;
+  --accent-foreground: 0 0% 100%;
+
+  --border: 220 15% 20%;
+  --input: 220 15% 20%;
+  --ring: 220 90% 60%;
+
+  --radius: 0.75rem;
+}
+
+/* ================================
+   🌌 BACKGROUND (VISIBLE & AESTHETIC)
+   ================================ */
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 700px at 75% 20%,
+      rgba(70, 110, 255, 0.35),
+      transparent 60%),
+    radial-gradient(900px 600px at 20% 80%,
+      rgba(140, 90, 255, 0.25),
+      transparent 55%),
+    linear-gradient(180deg,
+      #030712 0%,
+      #050a18 45%,
+      #030712 100%);
+
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+  position: relative;
+}
+
+/* ================================
+   ✨ SUBTLE NOISE TEXTURE
+   ================================ */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ================================
+   BASE
+   ================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+  }
+}
+
+/* ================================
+   🧊 CARDS (GLASS + DEPTH)
+   ================================ */
+
+@layer components {
+  .card {
+    @apply relative rounded-xl border bg-card text-card-foreground;
+    box-shadow:
+      0 0 0 1px hsl(220 15% 18%),
+      0 25px 60px -25px rgba(80, 120, 255, 0.45);
+    backdrop-filter: blur(10px);
+  }
+
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 0 0 1px hsl(220 20% 22%),
+      0 40px 80px -30px rgba(140, 90, 255, 0.55);
+  }
+}
+
+/* ================================
+   🔘 BUTTON POLISH (OPTIONAL)
+   ================================ */
+
+@layer utilities {
+  .btn-primary {
+    @apply bg-primary text-white;
+    box-shadow: 0 0 20px rgba(80, 120, 255, 0.6);
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 0 35px rgba(120, 90, 255, 0.8);
+  }
+}
