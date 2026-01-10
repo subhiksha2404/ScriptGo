@@ -17,11 +17,17 @@ export async function generateScript(formData: {
     topic: string
     tone: string
     length: string
+    language: string
+    framework: string
 }) {
-    const { platform, topic, tone, length } = formData
+    const { platform, topic, tone, length, language, framework } = formData
 
-    const prompt = `You are a professional social media script writer. Generate a script for ${platform} in a structured JSON format.
-Topic: ${topic}
+    const frameworkInstructions = framework !== 'None'
+        ? `Use the ${framework} marketing framework. `
+        : ''
+
+    const prompt = `You are a professional social media script writer. Generate a script for ${platform} in ${language}.
+${frameworkInstructions}Topic: ${topic}
 Tone: ${tone}
 Desired Length: ${length}
 
@@ -35,16 +41,20 @@ FORMAT RULES:
 
 JSON SCHEMA:
 {
-  "title": "Catchy Script Title",
+  "title": "Catchy Script Title (in ${language})",
   "script": [
     {
-      "visual": "Description of the visual scene",
-      "audio": "The voiceover or spoken dialogue"
+      "visual": "Description of the visual scene (written in ${language})",
+      "audio": "The voiceover or spoken dialogue (written in ${language})"
     }
   ]
 }
 
-CRITICAL: Return ONLY the JSON object. No extra text.`
+CRITICAL: 
+- Every single word in the "title", "visual", and "audio" fields MUST be in ${language}.
+- Use the native script for ${language} (e.g., Devanagari for Hindi).
+- Do NOT use English for visual descriptions if ${language} is NOT English.
+- Return ONLY the JSON object.`
 
     try {
         const result = await model.generateContent(prompt)
@@ -82,6 +92,8 @@ export async function saveScript(data: {
     topic: string
     tone: string
     length: string
+    language: string
+    framework: string
 }) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()

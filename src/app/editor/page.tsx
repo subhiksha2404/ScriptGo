@@ -44,6 +44,21 @@ const tones = [
     'Inspirational',
 ]
 
+const languages = [
+    'English',
+    'Tamil',
+    'Hindi',
+    'Spanish',
+    'French',
+    'German',
+]
+
+const frameworks = [
+    'None',
+    'AIDA',
+    'PAS',
+]
+
 function EditorContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -53,6 +68,8 @@ function EditorContent() {
     const [topic, setTopic] = useState('')
     const [tone, setTone] = useState('Professional')
     const [length, setLength] = useState('60s')
+    const [language, setLanguage] = useState('English')
+    const [framework, setFramework] = useState('None')
     const [content, setContent] = useState<ScriptRow[]>([])
     const [title, setTitle] = useState('')
     const [isGenerating, setIsGenerating] = useState(false)
@@ -74,6 +91,8 @@ function EditorContent() {
                 setTopic(script.topic)
                 setTone(script.tone)
                 setLength(script.length || '60s')
+                setLanguage(script.language || 'English')
+                setFramework(script.framework || 'None')
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load script.')
             } finally {
@@ -89,7 +108,7 @@ function EditorContent() {
         setIsSaved(false)
         setError(null)
         try {
-            const result = await generateScript({ platform, topic, tone, length })
+            const result = await generateScript({ platform, topic, tone, length, language, framework })
             setTitle(result.title)
             setContent(result.content)
         } catch (err) {
@@ -111,7 +130,9 @@ function EditorContent() {
                 platform,
                 topic,
                 tone,
-                length
+                length,
+                language,
+                framework
             })
             setIsSaved(true)
             setTimeout(() => setIsSaved(false), 3000)
@@ -294,6 +315,40 @@ function EditorContent() {
                                 onChange={(e) => setLength(e.target.value)}
                                 className="bg-card/30 border-border/50 focus:border-primary/50 transition-all h-14 rounded-2xl px-5 font-medium"
                             />
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label htmlFor="language" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Language</Label>
+                            <select
+                                id="language"
+                                disabled={isGenerating}
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                className="flex h-14 w-full rounded-2xl border border-border/50 bg-card/30 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                            >
+                                {languages.map((l) => (
+                                    <option key={l} value={l} className="bg-[#05070d] py-2">
+                                        {l}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-4">
+                            <Label htmlFor="framework" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Framework</Label>
+                            <select
+                                id="framework"
+                                disabled={isGenerating}
+                                value={framework}
+                                onChange={(e) => setFramework(e.target.value)}
+                                className="flex h-14 w-full rounded-2xl border border-border/50 bg-card/30 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                            >
+                                {frameworks.map((f) => (
+                                    <option key={f} value={f} className="bg-[#05070d] py-2">
+                                        {f}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <Button
