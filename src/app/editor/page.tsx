@@ -144,7 +144,7 @@ function EditorContent() {
             await saveScript({
                 id: scriptId || undefined,
                 title,
-                content: content as any,
+                content: content as ScriptRow[] | CalendarEntry[],
                 platform,
                 topic,
                 tone,
@@ -486,7 +486,7 @@ function EditorContent() {
                                                 {entry.script.slice(0, 1).map((row, sIdx) => (
                                                     <div key={sIdx} className="space-y-1">
                                                         <p className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40 text-center border-y border-border/10 py-1 mb-2">Preview</p>
-                                                        <p className="text-sm text-foreground/80 line-clamp-4 italic font-medium leading-relaxed">"{row.audio}"</p>
+                                                        <p className="text-sm text-foreground/80 line-clamp-4 italic font-medium leading-relaxed">&quot;{row.audio}&quot;</p>
                                                     </div>
                                                 ))}
                                                 <div className="flex items-center justify-center pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -615,7 +615,7 @@ function EditorContent() {
                                                 {row.visual}
                                             </td>
                                             <td className="align-top p-8 text-[16px] md:text-[18px] leading-[1.7] text-foreground/90 font-normal">
-                                                {row.audio}
+                                                &quot;{row.audio}&quot;
                                             </td>
                                         </tr>
                                     ))}
