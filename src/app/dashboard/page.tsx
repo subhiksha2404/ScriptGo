@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Plus, Calendar, AlertCircle } from 'lucide-react'
+import { FileText, Plus, Calendar, AlertCircle, Database } from 'lucide-react'
 import { signOut } from '../login/actions'
 import { DeleteButton } from '@/components/dashboard/delete-button'
 
@@ -40,6 +40,18 @@ export default async function DashboardPage() {
         return { ...script, content: processedContent };
     }) || [];
 
+    // Diagnostic: Check if any expected columns are missing in the data
+    const expectedColumns = ['calendarDays', 'framework', 'language', 'platform', 'topic', 'tone', 'length'];
+    const missingColumns: string[] = [];
+    if (rawScripts && rawScripts.length > 0) {
+        const firstScript = rawScripts[0];
+        expectedColumns.forEach(col => {
+            if (!(col in firstScript)) {
+                missingColumns.push(col);
+            }
+        });
+    }
+
     return (
         <div className="flex min-h-screen flex-col">
             <header className="sticky top-0 z-10 border-b border-white/10 bg-black">
@@ -72,6 +84,20 @@ export default async function DashboardPage() {
                     </Link>
                 </div>
 
+                {/* Database Schema Warning */}
+                {missingColumns.length > 0 && (
+                    <div className="mb-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                            <Database className="h-5 w-5" />
+                            <p className="text-sm font-bold">Database Schema Out of Date</p>
+                        </div>
+                        <p className="text-xs ml-8">
+                            The following columns are missing from your `scripts` table: <code className="bg-amber-500/10 px-1 rounded">{missingColumns.join(', ')}</code>.
+                            Saving will fail until these are added to Supabase.
+                        </p>
+                    </div>
+                )}
+
                 {fetchError && (
                     <div className="mb-8 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center gap-3">
                         <AlertCircle className="h-5 w-5" />
@@ -81,7 +107,7 @@ export default async function DashboardPage() {
 
                 {scripts.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {scripts.map((script) => {
+                        {scripts.map((script: any) => {
                             const isCalendar = script.calendarDays > 0 || (Array.isArray(script.content) && script.content.length > 0 && 'day' in script.content[0]);
 
                             return (
@@ -91,12 +117,12 @@ export default async function DashboardPage() {
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
-                                                        {script.platform}
+                                                        {script.platform || 'General'}
                                                     </div>
                                                     {isCalendar ? (
                                                         <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
                                                             <Calendar className="h-3 w-3" />
-                                                            {script.calendarDays || script.content.length} Days
+                                                            {script.calendarDays || (Array.isArray(script.content) ? script.content.length : 0)} Days
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -118,7 +144,7 @@ export default async function DashboardPage() {
                                     <CardContent>
                                         <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed">
                                             {isCalendar
-                                                ? `Day 1: ${script.content[0]?.title || 'Content Plan'}`
+                                                ? `Day 1: ${script.content?.[0]?.title || 'Content Plan'}`
                                                 : Array.isArray(script.content) && script.content.length > 0
                                                     ? script.content[0]?.audio
                                                     : typeof script.content === 'string'

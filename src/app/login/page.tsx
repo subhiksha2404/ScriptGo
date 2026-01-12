@@ -2,10 +2,33 @@
 
 import { login, signup } from './actions'
 import { useState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Loader2 } from 'lucide-react'
+
+function SubmitButton({ view }: { view: 'login' | 'signup' }) {
+    const { pending } = useFormStatus()
+
+    return (
+        <Button
+            formAction={view === 'login' ? login : signup}
+            className="w-full"
+            disabled={pending}
+        >
+            {pending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {view === 'login' ? 'Signing In...' : 'Signing Up...'}
+                </>
+            ) : (
+                view === 'login' ? 'Sign In' : 'Sign Up'
+            )}
+        </Button>
+    )
+}
 
 export default function LoginPage({
     searchParams,
@@ -69,12 +92,7 @@ export default function LoginPage({
                         )}
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4">
-                        <Button
-                            formAction={view === 'login' ? login : signup}
-                            className="w-full"
-                        >
-                            {view === 'login' ? 'Sign In' : 'Sign Up'}
-                        </Button>
+                        <SubmitButton view={view} />
                         <div className="text-center text-sm">
                             <span className="text-muted-foreground">
                                 {view === 'login'

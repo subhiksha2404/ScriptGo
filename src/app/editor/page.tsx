@@ -166,9 +166,11 @@ function EditorContent() {
                     router.push(`/editor?id=${result.data.id}`)
                 }
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving script:', err)
-            setError(err instanceof Error ? err.message : 'Failed to save script.')
+            const msg = err.message || 'Failed to save script.'
+            setError(msg)
+            alert(`Error: ${msg}`)
         } finally {
             setIsSaving(false)
         }
@@ -228,7 +230,7 @@ function EditorContent() {
         <div className="flex h-screen flex-col overflow-hidden font-sans">
             <header className="flex h-16 items-center justify-between border-b border-white/10 bg-black px-6">
                 <div className="flex items-center gap-4">
-                    <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" prefetch={false}>
                         <ChevronLeft className="h-5 w-5" />
                     </Link>
                     <div className="flex flex-col">
