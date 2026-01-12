@@ -17,15 +17,24 @@ import {
     Check,
     Video,
     Plus,
-    Trash2
+    Trash2,
+    X,
+    CalendarDays
 } from 'lucide-react'
+
 import Link from 'next/link'
-import { generateScript, saveScript, fetchScript, deleteScript } from './actions'
+import { generateScript, saveScript, fetchScript, deleteScript, generateCalendar } from './actions'
 import { cn } from '@/utils/cn'
 
 interface ScriptRow {
     visual: string
     audio: string
+}
+
+interface CalendarEntry {
+    day: number
+    title: string
+    script: ScriptRow[]
 }
 
 const platforms = [
@@ -70,13 +79,15 @@ function EditorContent() {
     const [length, setLength] = useState('60s')
     const [language, setLanguage] = useState('English')
     const [framework, setFramework] = useState('None')
-    const [content, setContent] = useState<ScriptRow[]>([])
+    const [calendarDays, setCalendarDays] = useState(0)
+    const [content, setContent] = useState<ScriptRow[] | CalendarEntry[]>([])
     const [title, setTitle] = useState('')
     const [isGenerating, setIsGenerating] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [isSaved, setIsSaved] = useState(false)
     const [isCopied, setIsCopied] = useState(false)
+    const [viewingEntry, setViewingEntry] = useState<CalendarEntry | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -93,6 +104,7 @@ function EditorContent() {
                 setLength(script.length || '60s')
                 setLanguage(script.language || 'English')
                 setFramework(script.framework || 'None')
+                setCalendarDays(script.calendarDays || 0)
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load script.')
             } finally {
@@ -108,11 +120,17 @@ function EditorContent() {
         setIsSaved(false)
         setError(null)
         try {
-            const result = await generateScript({ platform, topic, tone, length, language, framework })
-            setTitle(result.title)
-            setContent(result.content)
+            if (calendarDays > 0) {
+                const result = await generateCalendar({ platform, topic, tone, length, language, framework, days: calendarDays })
+                setTitle(`${calendarDays}-Day ${topic} Calendar`)
+                setContent(result as CalendarEntry[])
+            } else {
+                const result = await generateScript({ platform, topic, tone, length, language, framework })
+                setTitle(result.title)
+                setContent(result.content as ScriptRow[])
+            }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to generate script. Please try again.')
+            setError(err instanceof Error ? err.message : 'Failed to generate content. Please try again.')
         } finally {
             setIsGenerating(false)
         }
@@ -126,13 +144,14 @@ function EditorContent() {
             await saveScript({
                 id: scriptId || undefined,
                 title,
-                content,
+                content: content as any,
                 platform,
                 topic,
                 tone,
                 length,
                 language,
-                framework
+                framework,
+                calendarDays: calendarDays > 0 ? calendarDays : undefined
             })
             setIsSaved(true)
             setTimeout(() => setIsSaved(false), 3000)
@@ -160,26 +179,38 @@ function EditorContent() {
 
     const handleCopy = () => {
         if (!content || content.length === 0) return
-        const textToCopy = content.map(row => `[VISUAL]: ${row.visual}\n[AUDIO]: ${row.audio}`).join('\n\n')
+        let textToCopy = ''
+        if (calendarDays > 0) {
+            textToCopy = (content as CalendarEntry[]).map(entry =>
+                `DAY ${entry.day}: ${entry.title}\n` +
+                entry.script.map(row => `[VISUAL]: ${row.visual}\n[AUDIO]: ${row.audio}`).join('\n')
+            ).join('\n\n---\n\n')
+        } else {
+            textToCopy = (content as ScriptRow[]).map(row => `[VISUAL]: ${row.visual}\n[AUDIO]: ${row.audio}`).join('\n\n')
+        }
         navigator.clipboard.writeText(textToCopy)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
     }
 
     const updateRow = (index: number, field: 'visual' | 'audio', value: string) => {
-        const newContent = [...content]
+        if (calendarDays > 0) return // Editing calendar rows not implemented yet for simplicity
+        const newContent = [...(content as ScriptRow[])]
         newContent[index] = { ...newContent[index], [field]: value }
         setContent(newContent)
     }
 
     const addRow = () => {
-        setContent([...content, { visual: '', audio: '' }])
+        if (calendarDays > 0) return
+        setContent([...(content as ScriptRow[]), { visual: '', audio: '' }])
     }
 
     const removeRow = (index: number) => {
-        const newContent = content.filter((_, i) => i !== index)
+        if (calendarDays > 0) return
+        const newContent = (content as ScriptRow[]).filter((_, i) => i !== index)
         setContent(newContent)
     }
+
 
     return (
         <div className="flex h-screen flex-col overflow-hidden font-sans">
@@ -351,6 +382,51 @@ function EditorContent() {
                             </select>
                         </div>
 
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Content Calendar</Label>
+                                {calendarDays > 0 && (
+                                    <button
+                                        onClick={() => setCalendarDays(0)}
+                                        className="text-[10px] font-bold text-destructive hover:underline"
+                                    >
+                                        Disable
+                                    </button>
+                                )}
+                            </div>
+                            <div className="relative group">
+                                <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    max="365"
+                                    disabled={isGenerating}
+                                    placeholder="Number of days (e.g. 7, 30)"
+                                    value={calendarDays || ''}
+                                    onChange={(e) => setCalendarDays(parseInt(e.target.value) || 0)}
+                                    className="bg-card/30 border-border/50 focus:border-primary/50 transition-all h-14 rounded-2xl pl-12 pr-5 font-medium"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                {[7, 15, 30].map(d => (
+                                    <button
+                                        key={d}
+                                        type="button"
+                                        onClick={() => setCalendarDays(d)}
+                                        className={cn(
+                                            "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 transition-all",
+                                            calendarDays === d
+                                                ? "border-primary bg-primary/10 text-primary shadow-lg shadow-primary/5"
+                                                : "border-border/50 text-muted-foreground hover:border-primary/30"
+                                        )}
+                                    >
+                                        {d} Days
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+
                         <Button
                             className="w-full h-14 text-sm font-black btn-primary rounded-2xl active:scale-[0.98] transition-all group"
                             onClick={handleGenerate}
@@ -388,83 +464,185 @@ function EditorContent() {
                         </div>
                     )}
 
-                    <div className="mx-auto max-w-5xl w-full flex flex-col gap-6">
-                        <Card className="flex flex-col border-border/40 bg-card/30 shadow-2xl overflow-hidden transition-all duration-300 min-h-[75vh] card">
-                            {content && content.length > 0 ? (
-                                <div className="flex flex-col h-full">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full border-collapse">
-                                            <thead>
-                                                <tr className="border-b border-border/50 bg-muted/5">
-                                                    <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-border/20">See (Visual)</th>
-                                                    <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
-                                                    <th className="w-16"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-border/20">
-                                                {content.map((row, idx) => (
-                                                    <tr key={idx} className="group hover:bg-primary/[0.02] transition-colors">
-                                                        <td className="align-top border-r border-border/10 p-0">
-                                                            <textarea
-                                                                className="w-full min-h-[100px] bg-transparent border-none p-8 text-[15px] leading-relaxed resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-medium text-foreground/80"
-                                                                value={row.visual}
-                                                                onChange={(e) => updateRow(idx, 'visual', e.target.value)}
-                                                                placeholder="Scene description..."
-                                                                style={{ height: 'auto' }}
-                                                            />
-                                                        </td>
-                                                        <td className="align-top p-0">
-                                                            <textarea
-                                                                className="w-full min-h-[100px] bg-transparent border-none p-8 text-[17px] md:text-[18px] leading-[1.7] resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-normal text-foreground/90"
-                                                                value={row.audio}
-                                                                onChange={(e) => updateRow(idx, 'audio', e.target.value)}
-                                                                placeholder="Audio text..."
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-6 align-top">
-                                                            <button
-                                                                onClick={() => removeRow(idx)}
-                                                                className="text-muted-foreground/20 hover:text-destructive transition-colors p-1"
-                                                                title="Remove row"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
+                    <div className="mx-auto max-w-7xl w-full flex flex-col gap-6">
+                        {calendarDays > 0 && Array.isArray(content) && content.length > 0 && 'day' in content[0] ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {(content as CalendarEntry[]).map((entry, idx) => (
+                                    <div
+                                        key={idx}
+                                        onClick={() => setViewingEntry(entry)}
+                                        className="flex flex-col border-border/40 bg-card/30 shadow-xl overflow-hidden group hover:border-primary/30 transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] rounded-3xl"
+                                    >
+                                        <div className="p-4 border-b border-border/10 bg-muted/5 flex items-center justify-between">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Day {entry.day}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-medium text-muted-foreground/60 uppercase">{platform}</span>
+                                                <div className="h-1.5 w-1.5 rounded-full bg-primary/40 group-hover:bg-primary animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <div className="p-6 space-y-4 flex-1">
+                                            <h3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{entry.title}</h3>
+                                            <div className="space-y-3">
+                                                {entry.script.slice(0, 1).map((row, sIdx) => (
+                                                    <div key={sIdx} className="space-y-1">
+                                                        <p className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40 text-center border-y border-border/10 py-1 mb-2">Preview</p>
+                                                        <p className="text-sm text-foreground/80 line-clamp-4 italic font-medium leading-relaxed">"{row.audio}"</p>
+                                                    </div>
                                                 ))}
-                                            </tbody>
-                                        </table>
+                                                <div className="flex items-center justify-center pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                                        View Full Script
+                                                        <ChevronLeft className="h-3 w-3 rotate-180" />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="p-8 border-t border-border/10 bg-muted/5 flex justify-center">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={addRow}
-                                            className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all"
-                                        >
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Add Row
-                                        </Button>
+
+                                ))}
+                            </div>
+                        ) : (
+                            <Card className="flex flex-col border-border/40 bg-card/30 shadow-2xl overflow-hidden transition-all duration-300 min-h-[75vh] card">
+                                {content && content.length > 0 ? (
+                                    <div className="flex flex-col h-full">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full border-collapse">
+                                                <thead>
+                                                    <tr className="border-b border-border/50 bg-muted/5">
+                                                        <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-border/20">See (Visual)</th>
+                                                        <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
+                                                        <th className="w-16"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-border/20">
+                                                    {(content as ScriptRow[]).map((row, idx) => (
+                                                        <tr key={idx} className="group hover:bg-primary/[0.02] transition-colors">
+                                                            <td className="align-top border-r border-border/10 p-0">
+                                                                <textarea
+                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[15px] leading-relaxed resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-medium text-foreground/80"
+                                                                    value={row.visual}
+                                                                    onChange={(e) => updateRow(idx, 'visual', e.target.value)}
+                                                                    placeholder="Scene description..."
+                                                                    style={{ height: 'auto' }}
+                                                                />
+                                                            </td>
+                                                            <td className="align-top p-0">
+                                                                <textarea
+                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[17px] md:text-[18px] leading-[1.7] resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-normal text-foreground/90"
+                                                                    value={row.audio}
+                                                                    onChange={(e) => updateRow(idx, 'audio', e.target.value)}
+                                                                    placeholder="Audio text..."
+                                                                />
+                                                            </td>
+                                                            <td className="px-4 py-6 align-top">
+                                                                <button
+                                                                    onClick={() => removeRow(idx)}
+                                                                    className="text-muted-foreground/20 hover:text-destructive transition-colors p-1"
+                                                                    title="Remove row"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="p-8 border-t border-border/10 bg-muted/5 flex justify-center">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={addRow}
+                                                className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all"
+                                            >
+                                                <Plus className="mr-2 h-4 w-4" />
+                                                Add Row
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-1 flex-col items-center justify-center text-center py-32 px-8">
-                                    <div className="w-24 h-24 rounded-3xl bg-primary/5 flex items-center justify-center mb-8 border border-primary/10">
-                                        <Sparkles className="h-12 w-12 text-primary/40" />
+                                ) : (
+                                    <div className="flex flex-1 flex-col items-center justify-center text-center py-32 px-8">
+                                        <div className="w-24 h-24 rounded-3xl bg-primary/5 flex items-center justify-center mb-8 border border-primary/10">
+                                            <Sparkles className="h-12 w-12 text-primary/40" />
+                                        </div>
+                                        <h2 className="text-3xl font-black mb-4 tracking-tight">Ready to create?</h2>
+                                        <p className="max-w-md text-muted-foreground text-lg leading-relaxed font-medium">
+                                            Enter a topic and tone on the left, then click Generate to let the AI build your structured script.
+                                        </p>
                                     </div>
-                                    <h2 className="text-3xl font-black mb-4 tracking-tight">Ready to create?</h2>
-                                    <p className="max-w-md text-muted-foreground text-lg leading-relaxed font-medium">
-                                        Enter a topic and tone on the left, then click Generate to let the AI build your structured script.
-                                    </p>
-                                </div>
-                            )}
-                        </Card>
+                                )}
+                            </Card>
+                        )}
                     </div>
                 </main>
             </div>
+
+            {/* Expanded View Modal */}
+            {viewingEntry && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-all animate-in fade-in"
+                        onClick={() => setViewingEntry(null)}
+                    />
+                    <Card className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden border-border/40 bg-card/95 shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 rounded-[32px]">
+                        <div className="flex items-center justify-between p-6 border-b border-border/10 bg-muted/5">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Day {viewingEntry.day} • {platform}</span>
+                                <h2 className="text-2xl font-black tracking-tight">{viewingEntry.title}</h2>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setViewingEntry(null)}
+                                className="rounded-full hover:bg-destructive/10 hover:text-destructive"
+                            >
+                                <X className="h-6 w-6" />
+                            </Button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="border-b border-border/50 bg-muted/5 sticky top-0 bg-card/95 backdrop-blur-md z-10">
+                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-border/20">See (Visual)</th>
+                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/10">
+                                    {viewingEntry.script.map((row, idx) => (
+                                        <tr key={idx} className="group hover:bg-primary/[0.02] transition-colors">
+                                            <td className="align-top border-r border-border/10 p-8 text-[14px] leading-relaxed text-muted-foreground/90 font-medium">
+                                                {row.visual}
+                                            </td>
+                                            <td className="align-top p-8 text-[16px] md:text-[18px] leading-[1.7] text-foreground/90 font-normal">
+                                                {row.audio}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="p-6 border-t border-border/10 bg-muted/5 flex justify-end gap-3">
+                            <Button variant="outline" size="sm" onClick={() => {
+                                const text = viewingEntry.script.map(r => `[VISUAL]: ${r.visual}\n[AUDIO]: ${r.audio}`).join('\n\n')
+                                navigator.clipboard.writeText(text)
+                                alert('Content copied!')
+                            }}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy Day {viewingEntry.day}
+                            </Button>
+                            <Button size="sm" onClick={() => setViewingEntry(null)}>
+                                Close
+                            </Button>
+                        </div>
+                    </Card>
+                </div>
+            )}
         </div>
     )
 }
+
 
 export default function EditorPage() {
     return (

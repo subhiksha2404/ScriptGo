@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Plus } from 'lucide-react'
+import { FileText, Plus, Calendar } from 'lucide-react'
 import { signOut } from '../login/actions'
 import { DeleteButton } from '@/components/dashboard/delete-button'
 
@@ -57,46 +57,60 @@ export default async function DashboardPage() {
 
                 {scripts && scripts.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {scripts.map((script) => (
-                            <Card key={script.id} className="group transition-all card card-hover">
-                                <CardHeader>
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/30 px-2.5 py-0.5 text-[10px] font-bold text-secondary-foreground uppercase tracking-wider">
-                                                    {script.platform}
+                        {scripts.map((script) => {
+                            const isCalendar = script.calendarDays > 0 || (Array.isArray(script.content) && script.content.length > 0 && 'day' in script.content[0]);
+
+                            return (
+                                <Card key={script.id} className="group transition-all card card-hover">
+                                    <CardHeader>
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/30 px-2.5 py-0.5 text-[10px] font-bold text-secondary-foreground uppercase tracking-wider">
+                                                        {script.platform}
+                                                    </div>
+                                                    {isCalendar ? (
+                                                        <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+                                                            <Calendar className="h-3 w-3" />
+                                                            {script.calendarDays || script.content.length} Days
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+                                                            {script.length || '60s'}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
-                                                    {script.length || '60s'}
-                                                </div>
+                                                <span className="text-[10px] text-muted-foreground font-medium ml-0.5">
+                                                    {new Date(script.created_at).toLocaleDateString()}
+                                                </span>
                                             </div>
-                                            <span className="text-[10px] text-muted-foreground font-medium ml-0.5">
-                                                {new Date(script.created_at).toLocaleDateString()}
-                                            </span>
+                                            <DeleteButton id={script.id} />
                                         </div>
-                                        <DeleteButton id={script.id} />
-                                    </div>
-                                    <CardTitle className="mt-3 line-clamp-1 text-lg">{script.title}</CardTitle>
-                                    <CardDescription className="line-clamp-2 text-xs">
-                                        {script.topic}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed">
-                                        {Array.isArray(script.content)
-                                            ? script.content[0]?.audio
-                                            : typeof script.content === 'string' && script.content.startsWith('[')
-                                                ? JSON.parse(script.content)[0]?.audio
-                                                : script.content}
-                                    </p>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button variant="outline" size="sm" className="w-full text-xs font-semibold" asChild>
-                                        <Link href={`/editor?id=${script.id}`}>View Script</Link>
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        ))}
+                                        <CardTitle className="mt-3 line-clamp-1 text-lg">{script.title}</CardTitle>
+                                        <CardDescription className="line-clamp-2 text-xs">
+                                            {script.topic}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed">
+                                            {isCalendar
+                                                ? `Day 1: ${script.content[0]?.title || 'Content Plan'}`
+                                                : Array.isArray(script.content)
+                                                    ? script.content[0]?.audio
+                                                    : typeof script.content === 'string' && script.content.startsWith('[')
+                                                        ? JSON.parse(script.content)[0]?.audio
+                                                        : script.content
+                                            }
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button variant="outline" size="sm" className="w-full text-xs font-semibold" asChild>
+                                            <Link href={`/editor?id=${script.id}`}>View Script</Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="flex h-[450px] flex-col items-center justify-center rounded-2xl border border-dashed border-border p-12 text-center bg-card/20 group">

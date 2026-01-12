@@ -12,6 +12,13 @@ interface ScriptRow {
     audio: string
 }
 
+interface CalendarEntry {
+    day: number
+    title: string
+    script: ScriptRow[]
+}
+
+
 export async function generateScript(formData: {
     platform: string
     topic: string
@@ -84,16 +91,85 @@ CRITICAL:
     }
 }
 
-export async function saveScript(data: {
-    id?: string
-    title: string
-    content: ScriptRow[]
+export async function generateCalendar(formData: {
     platform: string
     topic: string
     tone: string
     length: string
     language: string
     framework: string
+    days: number
+}) {
+    const { platform, topic, tone, length, language, framework, days } = formData
+
+    const frameworkInstructions = framework !== 'None'
+        ? `Use the ${framework} marketing framework for EACH day's content. `
+        : ''
+
+    const prompt = `You are a professional social media content strategist and writer. 
+Generate a ${days}-day content calendar for ${platform} in ${language}.
+${frameworkInstructions}Overall Topic: ${topic}
+Tone: ${tone}
+Desired Length per post: ${length}
+
+Each day should have a unique focus related to the overall topic.
+
+FORMAT RULES:
+1. Return ONLY a valid JSON array of objects.
+2. No markdown, no "json" backticks, no explanatory text.
+3. Each object must represent one day.
+
+JSON SCHEMA:
+[
+  {
+    "day": 1,
+    "title": "Daily Topic Title (in ${language})",
+    "script": [
+      {
+        "visual": "Description of the visual scene (written in ${language})",
+        "audio": "The voiceover or spoken dialogue (written in ${language})"
+      }
+    ]
+  },
+  ... (up to day ${days})
+]
+
+CRITICAL: 
+- Every single word in the "title", "visual", and "audio" fields MUST be in ${language}.
+- Use the native script for ${language}.
+- Return ONLY the JSON array.`
+
+    try {
+        const result = await model.generateContent(prompt)
+        const text = result.response.text()
+
+        const jsonMatch = text.match(/\[[\s\S]*\]/)
+        const cleanJson = jsonMatch ? jsonMatch[0] : text
+
+        try {
+            const data = JSON.parse(cleanJson)
+            return data as CalendarEntry[]
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError, 'Raw text:', text)
+            throw new Error('AI failed to return a valid content calendar.')
+        }
+    } catch (error) {
+        console.error('Error generating calendar with Gemini:', error)
+        throw new Error(error instanceof Error ? error.message : 'Failed to generate calendar with AI')
+    }
+}
+
+export async function saveScript(data: {
+    id?: string
+    title: string
+    content: ScriptRow[] | CalendarEntry[]
+    platform: string
+    topic: string
+    tone: string
+    length: string
+    language: string
+    framework: string
+    calendarDays?: number
 }) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
