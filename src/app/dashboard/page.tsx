@@ -7,6 +7,33 @@ import { FileText, Plus, Calendar, AlertCircle, Database } from 'lucide-react'
 import { signOut } from '../login/actions'
 import { DeleteButton } from '@/components/dashboard/delete-button'
 
+interface ScriptRow {
+    visual: string
+    audio: string
+}
+
+interface CalendarEntry {
+    day: number
+    title: string
+    script: ScriptRow[]
+}
+
+interface Script {
+    id: string
+    user_id: string
+    title: string
+    content: ScriptRow[] | CalendarEntry[]
+    platform: string
+    topic: string
+    tone: string
+    created_at: string
+    updated_at: string
+    length: string
+    language: string
+    framework: string
+    calendarDays: number
+}
+
 export default async function DashboardPage() {
     const supabase = createClient()
 
@@ -28,7 +55,7 @@ export default async function DashboardPage() {
     }
 
     // Process scripts to ensure content is parsed if it's a string
-    const scripts = rawScripts?.map(script => {
+    const scripts = (rawScripts?.map(script => {
         let processedContent = script.content;
         if (typeof script.content === 'string') {
             try {
@@ -38,7 +65,7 @@ export default async function DashboardPage() {
             }
         }
         return { ...script, content: processedContent };
-    }) || [];
+    }) || []) as Script[];
 
     // Diagnostic: Check if any expected columns are missing in the data
     const expectedColumns = ['calendarDays', 'framework', 'language', 'platform', 'topic', 'tone', 'length'];
@@ -107,7 +134,7 @@ export default async function DashboardPage() {
 
                 {scripts.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {scripts.map((script: any) => {
+                        {scripts.map((script: Script) => {
                             const isCalendar = script.calendarDays > 0 || (Array.isArray(script.content) && script.content.length > 0 && 'day' in script.content[0]);
 
                             return (
@@ -144,9 +171,9 @@ export default async function DashboardPage() {
                                     <CardContent>
                                         <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed">
                                             {isCalendar
-                                                ? `Day 1: ${script.content?.[0]?.title || 'Content Plan'}`
+                                                ? `Day 1: ${(script.content as CalendarEntry[])?.[0]?.title || 'Content Plan'}`
                                                 : Array.isArray(script.content) && script.content.length > 0
-                                                    ? script.content[0]?.audio
+                                                    ? (script.content as ScriptRow[])[0]?.audio
                                                     : typeof script.content === 'string'
                                                         ? script.content
                                                         : 'No content'

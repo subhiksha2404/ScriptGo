@@ -166,9 +166,9 @@ function EditorContent() {
                     router.push(`/editor?id=${result.data.id}`)
                 }
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('Error saving script:', err)
-            const msg = err.message || 'Failed to save script.'
+            const msg = err instanceof Error ? err.message : 'Failed to save script.'
             setError(msg)
             alert(`Error: ${msg}`)
         } finally {
