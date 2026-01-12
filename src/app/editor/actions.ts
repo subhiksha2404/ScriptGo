@@ -180,24 +180,35 @@ export async function saveScript(data: {
 
     const { id, ...saveData } = data
 
+    console.log('Attempting to save script:', { id, ...saveData })
+
     if (id) {
-        const { error } = await supabase
+        const { error, data: updatedData } = await supabase
             .from('scripts')
             .update(saveData)
             .eq('id', id)
             .eq('user_id', user.id)
+            .select()
+            .single()
 
-        if (error) throw new Error(error.message)
+        if (error) {
+            console.error('Update Script Error:', error)
+            throw new Error(error.message)
+        }
+        return { success: true, data: updatedData }
     } else {
-        const { error } = await supabase.from('scripts').insert({
+        const { error, data: insertedData } = await supabase.from('scripts').insert({
             user_id: user.id,
             ...saveData,
-        })
+        }).select().single()
 
-        if (error) throw new Error(error.message)
+        if (error) {
+            console.error('Insert Script Error:', error)
+            throw new Error(error.message)
+        }
+        console.log('Successfully inserted script:', insertedData)
+        return { success: true, data: insertedData }
     }
-
-    return { success: true }
 }
 
 export async function fetchScript(id: string) {

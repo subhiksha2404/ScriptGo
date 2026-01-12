@@ -94,6 +94,7 @@ function EditorContent() {
         async function loadScript() {
             if (!scriptId) return
             setIsGenerating(true)
+            setError(null)
             try {
                 const script = await fetchScript(scriptId)
                 setTitle(script.title)
@@ -106,6 +107,7 @@ function EditorContent() {
                 setFramework(script.framework || 'None')
                 setCalendarDays(script.calendarDays || 0)
             } catch (err) {
+                console.error('Error loading script:', err)
                 setError(err instanceof Error ? err.message : 'Failed to load script.')
             } finally {
                 setIsGenerating(false)
@@ -130,6 +132,7 @@ function EditorContent() {
                 setContent(result.content as ScriptRow[])
             }
         } catch (err) {
+            console.error('Error generating content:', err)
             setError(err instanceof Error ? err.message : 'Failed to generate content. Please try again.')
         } finally {
             setIsGenerating(false)
@@ -141,7 +144,7 @@ function EditorContent() {
         setIsSaving(true)
         setError(null)
         try {
-            await saveScript({
+            const result = await saveScript({
                 id: scriptId || undefined,
                 title,
                 content: content as ScriptRow[] | CalendarEntry[],
@@ -153,9 +156,18 @@ function EditorContent() {
                 framework,
                 calendarDays: calendarDays > 0 ? calendarDays : undefined
             })
-            setIsSaved(true)
-            setTimeout(() => setIsSaved(false), 3000)
+
+            if (result.success) {
+                setIsSaved(true)
+                setTimeout(() => setIsSaved(false), 3000)
+
+                // If it was a new script, redirect to the editor with the new ID
+                if (!scriptId && result.data && 'id' in result.data) {
+                    router.push(`/editor?id=${result.data.id}`)
+                }
+            }
         } catch (err) {
+            console.error('Error saving script:', err)
             setError(err instanceof Error ? err.message : 'Failed to save script.')
         } finally {
             setIsSaving(false)
@@ -172,6 +184,7 @@ function EditorContent() {
             await deleteScript(scriptId)
             router.push('/dashboard')
         } catch (err) {
+            console.error('Error deleting script:', err)
             setError(err instanceof Error ? err.message : 'Failed to delete script.')
             setIsDeleting(false)
         }
@@ -194,7 +207,7 @@ function EditorContent() {
     }
 
     const updateRow = (index: number, field: 'visual' | 'audio', value: string) => {
-        if (calendarDays > 0) return // Editing calendar rows not implemented yet for simplicity
+        if (calendarDays > 0) return
         const newContent = [...(content as ScriptRow[])]
         newContent[index] = { ...newContent[index], [field]: value }
         setContent(newContent)
@@ -210,7 +223,6 @@ function EditorContent() {
         const newContent = (content as ScriptRow[]).filter((_, i) => i !== index)
         setContent(newContent)
     }
-
 
     return (
         <div className="flex h-screen flex-col overflow-hidden font-sans">
@@ -279,7 +291,7 @@ function EditorContent() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-[340px] flex-shrink-0 border-r border-border p-8 overflow-y-auto">
+                <aside className="w-[340px] flex-shrink-0 border-r border-white/10 p-8 overflow-y-auto bg-black">
                     <div className="space-y-10">
                         <div className="space-y-4">
                             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Platform</Label>
@@ -295,7 +307,7 @@ function EditorContent() {
                                                 "flex flex-col items-center justify-center rounded-2xl border-2 p-4 transition-all duration-300",
                                                 platform === p.id
                                                     ? "border-primary bg-primary/10 text-primary shadow-xl shadow-primary/10 scale-[1.02]"
-                                                    : "border-border/50 text-muted-foreground hover:border-primary/30 hover:bg-primary/5",
+                                                    : "border-white/10 text-muted-foreground hover:border-primary/30 hover:bg-primary/5",
                                                 isGenerating && "opacity-50 cursor-not-allowed"
                                             )}
                                         >
@@ -315,7 +327,7 @@ function EditorContent() {
                                 placeholder="e.g. Next.js 14 Server Actions"
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
-                                className="bg-card/30 border-border/50 focus:border-primary/50 transition-all h-14 rounded-2xl px-5 font-medium"
+                                className="bg-white/5 border-white/10 focus:border-primary/50 transition-all h-14 rounded-2xl px-5 font-medium"
                             />
                         </div>
 
@@ -326,10 +338,10 @@ function EditorContent() {
                                 disabled={isGenerating}
                                 value={tone}
                                 onChange={(e) => setTone(e.target.value)}
-                                className="flex h-14 w-full rounded-2xl border border-border/50 bg-card/30 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                                className="flex h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer text-white"
                             >
                                 {tones.map((t) => (
-                                    <option key={t} value={t} className="bg-[#05070d] py-2">
+                                    <option key={t} value={t} className="bg-black py-2">
                                         {t}
                                     </option>
                                 ))}
@@ -344,7 +356,7 @@ function EditorContent() {
                                 placeholder="e.g. 60s, 2m, 5 minutes"
                                 value={length}
                                 onChange={(e) => setLength(e.target.value)}
-                                className="bg-card/30 border-border/50 focus:border-primary/50 transition-all h-14 rounded-2xl px-5 font-medium"
+                                className="bg-white/5 border-white/10 focus:border-primary/50 transition-all h-14 rounded-2xl px-5 font-medium"
                             />
                         </div>
 
@@ -355,10 +367,10 @@ function EditorContent() {
                                 disabled={isGenerating}
                                 value={language}
                                 onChange={(e) => setLanguage(e.target.value)}
-                                className="flex h-14 w-full rounded-2xl border border-border/50 bg-card/30 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                                className="flex h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer text-white"
                             >
                                 {languages.map((l) => (
-                                    <option key={l} value={l} className="bg-[#05070d] py-2">
+                                    <option key={l} value={l} className="bg-black py-2">
                                         {l}
                                     </option>
                                 ))}
@@ -372,10 +384,10 @@ function EditorContent() {
                                 disabled={isGenerating}
                                 value={framework}
                                 onChange={(e) => setFramework(e.target.value)}
-                                className="flex h-14 w-full rounded-2xl border border-border/50 bg-card/30 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer"
+                                className="flex h-14 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-primary/50 transition-all appearance-none cursor-pointer text-white"
                             >
                                 {frameworks.map((f) => (
-                                    <option key={f} value={f} className="bg-[#05070d] py-2">
+                                    <option key={f} value={f} className="bg-black py-2">
                                         {f}
                                     </option>
                                 ))}
@@ -404,7 +416,7 @@ function EditorContent() {
                                     placeholder="Number of days (e.g. 7, 30)"
                                     value={calendarDays || ''}
                                     onChange={(e) => setCalendarDays(parseInt(e.target.value) || 0)}
-                                    className="bg-card/30 border-border/50 focus:border-primary/50 transition-all h-14 rounded-2xl pl-12 pr-5 font-medium"
+                                    className="bg-white/5 border-white/10 focus:border-primary/50 transition-all h-14 rounded-2xl pl-12 pr-5 font-medium"
                                 />
                             </div>
                             <div className="flex gap-2">
@@ -417,7 +429,7 @@ function EditorContent() {
                                             "flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border-2 transition-all",
                                             calendarDays === d
                                                 ? "border-primary bg-primary/10 text-primary shadow-lg shadow-primary/5"
-                                                : "border-border/50 text-muted-foreground hover:border-primary/30"
+                                                : "border-white/10 text-muted-foreground hover:border-primary/30"
                                         )}
                                     >
                                         {d} Days
@@ -426,9 +438,8 @@ function EditorContent() {
                             </div>
                         </div>
 
-
                         <Button
-                            className="w-full h-14 text-sm font-black btn-primary rounded-2xl active:scale-[0.98] transition-all group"
+                            className="w-full h-14 text-sm font-black bg-primary hover:bg-primary/90 text-white rounded-2xl active:scale-[0.98] transition-all group"
                             onClick={handleGenerate}
                             disabled={!topic || isGenerating}
                         >
@@ -454,12 +465,12 @@ function EditorContent() {
                 </aside>
 
                 {/* Main Editor */}
-                <main className="flex-1 p-6 sm:p-12 overflow-y-auto relative custom-scrollbar">
+                <main className="flex-1 p-6 sm:p-12 overflow-y-auto relative bg-black/95">
                     {isGenerating && (
-                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/40 backdrop-blur-[2px]">
-                            <div className="flex flex-col items-center gap-4 p-8 rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                            <div className="flex flex-col items-center gap-4 p-8 rounded-2xl border border-white/10 bg-white/5 shadow-2xl animate-in zoom-in-95 duration-200">
                                 <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                                <p className="text-sm font-semibold text-foreground animate-pulse">AI is crafting your script...</p>
+                                <p className="text-sm font-semibold text-white animate-pulse">AI is crafting your script...</p>
                             </div>
                         </div>
                     )}
@@ -471,9 +482,9 @@ function EditorContent() {
                                     <div
                                         key={idx}
                                         onClick={() => setViewingEntry(entry)}
-                                        className="flex flex-col border-border/40 bg-card/30 shadow-xl overflow-hidden group hover:border-primary/30 transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] rounded-3xl"
+                                        className="flex flex-col border border-white/10 bg-white/5 shadow-xl overflow-hidden group hover:border-primary/30 transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] rounded-3xl"
                                     >
-                                        <div className="p-4 border-b border-border/10 bg-muted/5 flex items-center justify-between">
+                                        <div className="p-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-primary">Day {entry.day}</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-medium text-muted-foreground/60 uppercase">{platform}</span>
@@ -481,11 +492,11 @@ function EditorContent() {
                                             </div>
                                         </div>
                                         <div className="p-6 space-y-4 flex-1">
-                                            <h3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{entry.title}</h3>
+                                            <h3 className="text-lg font-bold leading-tight line-clamp-2 text-white group-hover:text-primary transition-colors">{entry.title}</h3>
                                             <div className="space-y-3">
                                                 {entry.script.slice(0, 1).map((row, sIdx) => (
                                                     <div key={sIdx} className="space-y-1">
-                                                        <p className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40 text-center border-y border-border/10 py-1 mb-2">Preview</p>
+                                                        <p className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/40 text-center border-y border-white/5 py-1 mb-2">Preview</p>
                                                         <p className="text-sm text-foreground/80 line-clamp-4 italic font-medium leading-relaxed">&quot;{row.audio}&quot;</p>
                                                     </div>
                                                 ))}
@@ -498,37 +509,35 @@ function EditorContent() {
                                             </div>
                                         </div>
                                     </div>
-
                                 ))}
                             </div>
                         ) : (
-                            <Card className="flex flex-col border-border/40 bg-card/30 shadow-2xl overflow-hidden transition-all duration-300 min-h-[75vh] card">
+                            <Card className="flex flex-col border-white/10 bg-white/5 shadow-2xl overflow-hidden transition-all duration-300 min-h-[75vh]">
                                 {content && content.length > 0 ? (
                                     <div className="flex flex-col h-full">
                                         <div className="overflow-x-auto">
                                             <table className="w-full border-collapse">
                                                 <thead>
-                                                    <tr className="border-b border-border/50 bg-muted/5">
-                                                        <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-border/20">See (Visual)</th>
+                                                    <tr className="border-b border-white/10 bg-white/5">
+                                                        <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-white/5">See (Visual)</th>
                                                         <th className="text-left py-5 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
                                                         <th className="w-16"></th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-border/20">
+                                                <tbody className="divide-y divide-white/10">
                                                     {(content as ScriptRow[]).map((row, idx) => (
                                                         <tr key={idx} className="group hover:bg-primary/[0.02] transition-colors">
-                                                            <td className="align-top border-r border-border/10 p-0">
+                                                            <td className="align-top border-r border-white/5 p-0">
                                                                 <textarea
-                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[15px] leading-relaxed resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-medium text-foreground/80"
+                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[15px] leading-relaxed resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-medium text-foreground/80 outline-none"
                                                                     value={row.visual}
                                                                     onChange={(e) => updateRow(idx, 'visual', e.target.value)}
                                                                     placeholder="Scene description..."
-                                                                    style={{ height: 'auto' }}
                                                                 />
                                                             </td>
                                                             <td className="align-top p-0">
                                                                 <textarea
-                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[17px] md:text-[18px] leading-[1.7] resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-normal text-foreground/90"
+                                                                    className="w-full min-h-[100px] bg-transparent border-none p-8 text-[17px] md:text-[18px] leading-[1.7] resize-none focus:ring-0 placeholder:text-muted-foreground/20 font-normal text-foreground/90 outline-none"
                                                                     value={row.audio}
                                                                     onChange={(e) => updateRow(idx, 'audio', e.target.value)}
                                                                     placeholder="Audio text..."
@@ -540,7 +549,7 @@ function EditorContent() {
                                                                     className="text-muted-foreground/20 hover:text-destructive transition-colors p-1"
                                                                     title="Remove row"
                                                                 >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                                    <Trash2 className="h-4 w-4" />
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -548,7 +557,7 @@ function EditorContent() {
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div className="p-8 border-t border-border/10 bg-muted/5 flex justify-center">
+                                        <div className="p-8 border-t border-white/10 bg-white/5 flex justify-center">
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -565,7 +574,7 @@ function EditorContent() {
                                         <div className="w-24 h-24 rounded-3xl bg-primary/5 flex items-center justify-center mb-8 border border-primary/10">
                                             <Sparkles className="h-12 w-12 text-primary/40" />
                                         </div>
-                                        <h2 className="text-3xl font-black mb-4 tracking-tight">Ready to create?</h2>
+                                        <h2 className="text-3xl font-black mb-4 tracking-tight text-white">Ready to create?</h2>
                                         <p className="max-w-md text-muted-foreground text-lg leading-relaxed font-medium">
                                             Enter a topic and tone on the left, then click Generate to let the AI build your structured script.
                                         </p>
@@ -584,11 +593,11 @@ function EditorContent() {
                         className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-all animate-in fade-in"
                         onClick={() => setViewingEntry(null)}
                     />
-                    <Card className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden border-border/40 bg-card/95 shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 rounded-[32px]">
-                        <div className="flex items-center justify-between p-6 border-b border-border/10 bg-muted/5">
+                    <Card className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-2xl flex flex-col animate-in zoom-in-95 duration-200 rounded-[32px]">
+                        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/5">
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Day {viewingEntry.day} • {platform}</span>
-                                <h2 className="text-2xl font-black tracking-tight">{viewingEntry.title}</h2>
+                                <h2 className="text-2xl font-black tracking-tight text-white">{viewingEntry.title}</h2>
                             </div>
                             <Button
                                 variant="ghost"
@@ -600,21 +609,21 @@ function EditorContent() {
                             </Button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-0 scrollbar-hide">
                             <table className="w-full border-collapse">
                                 <thead>
-                                    <tr className="border-b border-border/50 bg-muted/5 sticky top-0 bg-card/95 backdrop-blur-md z-10">
-                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-border/20">See (Visual)</th>
+                                    <tr className="border-b border-white/10 bg-white/5 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10">
+                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-white/5">See (Visual)</th>
                                         <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border/10">
+                                <tbody className="divide-y divide-white/5">
                                     {viewingEntry.script.map((row, idx) => (
-                                        <tr key={idx} className="group hover:bg-primary/[0.02] transition-colors">
-                                            <td className="align-top border-r border-border/10 p-8 text-[14px] leading-relaxed text-muted-foreground/90 font-medium">
+                                        <tr key={idx} className="group hover:bg-white/[0.02] transition-colors">
+                                            <td className="align-top border-r border-white/5 p-8 text-[14px] leading-relaxed text-muted-foreground/90 font-medium">
                                                 {row.visual}
                                             </td>
-                                            <td className="align-top p-8 text-[16px] md:text-[18px] leading-[1.7] text-foreground/90 font-normal">
+                                            <td className="align-top p-8 text-[16px] md:text-[18px] leading-[1.7] text-white font-normal">
                                                 &quot;{row.audio}&quot;
                                             </td>
                                         </tr>
@@ -623,16 +632,17 @@ function EditorContent() {
                             </table>
                         </div>
 
-                        <div className="p-6 border-t border-border/10 bg-muted/5 flex justify-end gap-3">
-                            <Button variant="outline" size="sm" onClick={() => {
+                        <div className="p-6 border-t border-white/5 bg-white/5 flex justify-end gap-3">
+                            <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/10" onClick={() => {
                                 const text = viewingEntry.script.map(r => `[VISUAL]: ${r.visual}\n[AUDIO]: ${r.audio}`).join('\n\n')
                                 navigator.clipboard.writeText(text)
-                                alert('Content copied!')
+                                setIsCopied(true)
+                                setTimeout(() => setIsCopied(false), 2000)
                             }}>
                                 <Copy className="mr-2 h-4 w-4" />
-                                Copy Day {viewingEntry.day}
+                                {isCopied ? 'Copied' : `Copy Day ${viewingEntry.day}`}
                             </Button>
-                            <Button size="sm" onClick={() => setViewingEntry(null)}>
+                            <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => setViewingEntry(null)}>
                                 Close
                             </Button>
                         </div>
@@ -643,11 +653,10 @@ function EditorContent() {
     )
 }
 
-
 export default function EditorPage() {
     return (
         <Suspense fallback={
-            <div className="flex min-h-screen items-center justify-center bg-background">
+            <div className="flex min-h-screen items-center justify-center bg-black">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         }>
