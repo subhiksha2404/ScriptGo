@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { generateScript, saveScript, fetchScript, deleteScript, generateCalendar } from './actions'
 import { cn } from '@/utils/cn'
 
@@ -234,8 +235,8 @@ function EditorContent() {
                     </Link>
                     <div className="h-8 w-[1px] bg-border/60 mx-2" />
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border shadow-premium overflow-hidden">
-                            <img src="/assets/logo.png" alt="Logo" className="h-full w-full object-cover" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-border shadow-premium overflow-hidden relative">
+                            <Image src="/assets/logo.png" alt="Logo" fill className="object-cover" />
                         </div>
                         <div className="flex flex-col">
                             <h1 className="text-sm font-black uppercase tracking-tighter leading-none text-navy">

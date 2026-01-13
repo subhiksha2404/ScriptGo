@@ -1,18 +1,11 @@
 import {
     Zap,
     Target,
-    Layout,
-    Cpu,
-    CheckCircle2,
-    Globe,
     FlaskConical,
     Microscope,
     Atom,
-    Dna,
-    Activity,
-    Beaker
+    Activity
 } from 'lucide-react'
-import { cn } from '@/utils/cn'
 
 const features = [
     {

@@ -1,8 +1,9 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Video, Linkedin, Target, BookOpen } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export function Hero() {
     return (
@@ -16,7 +17,7 @@ export function Hero() {
                     {/* Left Content */}
                     <div className="flex flex-col items-start text-left">
                         <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white border border-border shadow-soft mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <img src="/assets/logo.png" alt="Logo" className="h-5 w-auto" />
+                            <Image src="/assets/logo.png" alt="Logo" width={20} height={20} className="h-5 w-auto object-contain" />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-navy">GPT-4o Creative Agent v2.0</span>
                         </div>
 
@@ -56,10 +57,11 @@ export function Hero() {
                     {/* Right Illustration */}
                     <div className="relative hidden lg:block animate-in fade-in zoom-in duration-1000 delay-300">
                         <div className="relative z-10 w-full aspect-square rounded-[4rem] overflow-hidden shadow-premium border-4 border-white transform hover:rotate-2 transition-transform duration-700">
-                            <img
+                            <Image
                                 src="/assets/hero-illustration.png"
                                 alt="Content Agent Illustration"
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
                             />
                         </div>
                         {/* Decorative floating elements */}

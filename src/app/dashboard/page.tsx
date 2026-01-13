@@ -7,6 +7,8 @@ import { FileText, Plus, Calendar, AlertCircle, Database, LayoutDashboard } from
 import { signOut } from '../login/actions'
 import { DeleteButton } from '@/components/dashboard/delete-button'
 
+import Image from 'next/image'
+
 interface ScriptRow {
     visual: string
     audio: string
@@ -84,8 +86,8 @@ export default async function DashboardPage() {
             <header className="sticky top-0 z-10 border-b border-border bg-white/80 backdrop-blur-md">
                 <div className="container flex h-16 items-center justify-between px-8">
                     <Link href="/" className="flex items-center gap-3 active:scale-95 transition-transform">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-border shadow-soft flex items-center justify-center p-2">
-                            <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                        <div className="w-10 h-10 rounded-xl bg-white border border-border shadow-soft flex items-center justify-center p-2 relative overflow-hidden">
+                            <Image src="/assets/logo.png" alt="Logo" fill className="object-contain p-2" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-lg font-black tracking-tighter text-navy uppercase leading-none">ScriptGo</span>

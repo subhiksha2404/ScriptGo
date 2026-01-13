@@ -6,9 +6,8 @@ import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react'
-import Link from 'next/link'
-import { cn } from '@/utils/cn'
+import { Loader2, ArrowRight, ShieldCheck } from 'lucide-react'
+import Image from 'next/image'
 
 function SubmitButton({ view }: { view: 'login' | 'signup' }) {
     const { pending } = useFormStatus()
@@ -50,7 +49,7 @@ export default function LoginPage({
             <div className="w-full max-w-md z-10">
                 <div className="text-center mb-10 space-y-3">
                     <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white border border-border shadow-soft mb-6">
-                        <img src="/assets/logo.png" alt="Logo" className="h-6 w-auto" />
+                        <Image src="/assets/logo.png" alt="Logo" width={24} height={24} className="h-6 w-auto object-contain" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-navy">ScriptGo Agent</span>
                     </div>
                     <h1 className="text-4xl font-black text-navy uppercase tracking-tighter">

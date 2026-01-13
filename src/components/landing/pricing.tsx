@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { FlaskConical, Target, ShieldCheck } from 'lucide-react'
+import { FlaskConical, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/utils/cn'
 

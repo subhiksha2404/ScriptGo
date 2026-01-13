@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Sparkles, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -32,8 +33,8 @@ export function Navbar() {
         )}>
             <div className="container mx-auto flex items-center justify-between px-8">
                 <Link href="/" className="flex items-center gap-3 active:scale-95 transition-transform">
-                    <div className="w-12 h-12 rounded-2xl bg-white border border-border shadow-soft flex items-center justify-center p-2.5">
-                        <img src="/assets/logo.png" alt="ScriptGo Logo" className="w-full h-full object-contain" />
+                    <div className="w-12 h-12 rounded-2xl bg-white border border-border shadow-soft flex items-center justify-center p-2.5 relative overflow-hidden">
+                        <Image src="/assets/logo.png" alt="ScriptGo Logo" fill className="object-contain p-2.5" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xl font-black tracking-tighter text-navy uppercase leading-none">ScriptGo</span>

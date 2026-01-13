@@ -1,5 +1,6 @@
-import { Sparkles, Twitter, Github, Linkedin, ShieldCheck, Globe, Zap } from 'lucide-react'
+import { Twitter, Github, Linkedin, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export function Footer() {
     return (
@@ -8,8 +9,8 @@ export function Footer() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-24">
                     <div className="col-span-2 md:col-span-1">
                         <Link href="/" className="flex items-center gap-3 mb-8 group">
-                            <div className="w-12 h-12 rounded-2xl bg-white border border-border flex items-center justify-center p-2.5 shadow-soft group-hover:scale-105 transition-transform">
-                                <img src="/assets/logo.png" alt="ScriptGo Logo" className="w-full h-full object-contain" />
+                            <div className="w-12 h-12 rounded-2xl bg-white border border-border flex items-center justify-center p-2.5 shadow-soft group-hover:scale-105 transition-transform relative overflow-hidden">
+                                <Image src="/assets/logo.png" alt="ScriptGo Logo" fill className="object-contain p-2.5" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-xl font-black tracking-tighter text-navy uppercase leading-none">ScriptGo</span>
