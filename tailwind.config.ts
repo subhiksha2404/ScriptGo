@@ -42,12 +42,28 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        navy: {
+          DEFAULT: "#101828",
+          foreground: "#FFFFFF",
+        },
+        orange: {
+          DEFAULT: "#FF5D29", // From the inspiration image
+          foreground: "#FFFFFF",
+        },
+        soft: "#F2F4F7",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "1rem",
+        "2xl": "1.5rem",
+        "3xl": "2.5rem",
       },
+      boxShadow: {
+        'soft': '0 4px 20px -2px rgba(16, 24, 40, 0.05)',
+        'premium': '0 20px 50px -12px rgba(16, 24, 40, 0.1)',
+      }
     },
   },
   plugins: [],

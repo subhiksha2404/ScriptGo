@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileText, Plus, Calendar, AlertCircle, Database } from 'lucide-react'
+import { FileText, Plus, Calendar, AlertCircle, Database, LayoutDashboard } from 'lucide-react'
 import { signOut } from '../login/actions'
 import { DeleteButton } from '@/components/dashboard/delete-button'
 
@@ -81,16 +81,25 @@ export default async function DashboardPage() {
 
     return (
         <div className="flex min-h-screen flex-col">
-            <header className="sticky top-0 z-10 border-b border-white/10 bg-black">
-                <div className="container flex h-16 items-center justify-between px-4">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold tracking-tight text-white">ScriptGo</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-muted-foreground">{user.email}</span>
+            <header className="sticky top-0 z-10 border-b border-border bg-white/80 backdrop-blur-md">
+                <div className="container flex h-16 items-center justify-between px-8">
+                    <Link href="/" className="flex items-center gap-3 active:scale-95 transition-transform">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-border shadow-soft flex items-center justify-center p-2">
+                            <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-lg font-black tracking-tighter text-navy uppercase leading-none">ScriptGo</span>
+                            <span className="text-[7px] font-black tracking-[0.3em] text-orange uppercase mt-0.5">Creative Agent</span>
+                        </div>
+                    </Link>
+                    <div className="flex items-center gap-6">
+                        <div className="hidden md:flex flex-col items-end">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-navy">Agent Status</span>
+                            <span className="text-xs font-semibold text-muted-foreground">{user.email}</span>
+                        </div>
                         <form action={signOut}>
-                            <Button variant="ghost" size="sm" className="text-white hover:text-white/80">
-                                Sign Out
+                            <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-soft transition-all">
+                                Exit Workspace
                             </Button>
                         </form>
                     </div>
@@ -98,15 +107,18 @@ export default async function DashboardPage() {
             </header>
 
             <main className="container flex-1 py-8 px-4">
-                <div className="mb-8 flex items-center justify-between">
+                <div className="mb-12 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
-                        <p className="text-muted-foreground">Manage and view your AI-generated scripts.</p>
+                        <div className="flex items-center gap-2 text-orange font-black uppercase tracking-[0.3em] text-[10px] mb-2">
+                            <LayoutDashboard className="h-3 w-3" />
+                            Agent Overview
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black text-navy uppercase tracking-tighter">Workspace.</h1>
                     </div>
                     <Link href="/editor">
-                        <Button className="bg-primary hover:bg-primary/90">
+                        <Button className="h-14 px-8 rounded-2xl bg-navy hover:bg-navy/90 text-white text-xs font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
                             <Plus className="mr-2 h-4 w-4" />
-                            New Script
+                            Initiate Creation
                         </Button>
                     </Link>
                 </div>
@@ -138,38 +150,38 @@ export default async function DashboardPage() {
                             const isCalendar = script.calendarDays > 0 || (Array.isArray(script.content) && script.content.length > 0 && 'day' in script.content[0]);
 
                             return (
-                                <Card key={script.id} className="group transition-all border-white/10 bg-white/5 hover:bg-white/10">
-                                    <CardHeader>
+                                <Card key={script.id} className="group transition-all border-border bg-white/60 backdrop-blur-sm hover:bg-white hover:shadow-premium-hover rounded-[2rem] overflow-hidden">
+                                    <CardHeader className="pb-4">
                                         <div className="flex items-start justify-between">
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                                                    <div className="flex items-center gap-2 rounded-full border border-border bg-white px-2.5 py-1 text-[10px] font-black text-navy uppercase tracking-wider">
                                                         {script.platform || 'General'}
                                                     </div>
                                                     {isCalendar ? (
-                                                        <div className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
+                                                        <div className="flex items-center gap-1 rounded-full border border-orange/20 bg-orange/10 px-2.5 py-1 text-[10px] font-black text-orange uppercase tracking-wider">
                                                             <Calendar className="h-3 w-3" />
                                                             {script.calendarDays || (Array.isArray(script.content) ? script.content.length : 0)} Days
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                        <div className="flex items-center gap-2 rounded-full border border-border bg-soft px-2.5 py-1 text-[10px] font-black text-muted-foreground uppercase tracking-wider">
                                                             {script.length || '60s'}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span className="text-[10px] text-muted-foreground font-medium ml-0.5">
+                                                <span className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest ml-1">
                                                     {new Date(script.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
                                             <DeleteButton id={script.id} />
                                         </div>
-                                        <CardTitle className="mt-3 line-clamp-1 text-lg text-white">{script.title}</CardTitle>
-                                        <CardDescription className="line-clamp-2 text-xs text-muted-foreground">
+                                        <CardTitle className="mt-4 line-clamp-1 text-xl font-black text-navy uppercase tracking-tighter">{script.title}</CardTitle>
+                                        <CardDescription className="line-clamp-2 text-xs font-medium text-muted-foreground mt-1">
                                             {script.topic}
                                         </CardDescription>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed">
+                                    <CardContent className="pb-6">
+                                        <p className="line-clamp-3 text-sm text-muted-foreground/80 leading-relaxed font-medium">
                                             {isCalendar
                                                 ? `Day 1: ${(script.content as CalendarEntry[])?.[0]?.title || 'Content Plan'}`
                                                 : Array.isArray(script.content) && script.content.length > 0
@@ -180,9 +192,9 @@ export default async function DashboardPage() {
                                             }
                                         </p>
                                     </CardContent>
-                                    <CardFooter>
-                                        <Button variant="outline" size="sm" className="w-full text-xs font-semibold border-white/10 hover:bg-white/10" asChild>
-                                            <Link href={`/editor?id=${script.id}`}>View Script</Link>
+                                    <CardFooter className="pt-0">
+                                        <Button variant="outline" size="sm" className="w-full h-11 text-[10px] font-black uppercase tracking-widest border-border hover:bg-navy hover:text-white rounded-xl transition-all" asChild>
+                                            <Link href={`/editor?id=${script.id}`}>Open Script</Link>
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -190,21 +202,21 @@ export default async function DashboardPage() {
                         })}
                     </div>
                 ) : !fetchError && (
-                    <div className="flex h-[450px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 p-12 text-center bg-white/5 group">
-                        <div className="relative mb-6">
-                            <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500" />
-                            <div className="relative rounded-full bg-primary/5 p-5 border border-primary/10">
-                                <FileText className="h-10 w-10 text-primary/60" />
+                    <div className="flex h-[450px] flex-col items-center justify-center rounded-[3rem] border border-dashed border-border p-12 text-center bg-white/40 backdrop-blur-sm group">
+                        <div className="relative mb-8">
+                            <div className="absolute inset-0 bg-orange/10 rounded-full blur-2xl group-hover:bg-orange/20 transition-all duration-500" />
+                            <div className="relative rounded-[2rem] bg-white p-6 border border-border shadow-soft">
+                                <FileText className="h-10 w-10 text-navy/40" />
                             </div>
                         </div>
-                        <h3 className="text-2xl font-bold tracking-tight mb-3 text-white">No scripts yet</h3>
-                        <p className="max-w-xs mx-auto text-sm text-muted-foreground leading-relaxed mb-8">
-                            Your generated AI scripts will appear here. Start by creating a new script.
+                        <h3 className="text-3xl font-black text-navy uppercase tracking-tighter mb-4">No content in the workspace.</h3>
+                        <p className="max-w-xs mx-auto text-sm text-muted-foreground font-medium mb-10 leading-relaxed">
+                            Your creative projects will appear here once you initiate your first professional creation.
                         </p>
                         <Link href="/editor">
-                            <Button size="lg" className="h-12 px-8 font-bold shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90">
+                            <Button size="lg" className="h-14 px-10 rounded-2xl bg-navy hover:bg-navy/90 text-white text-xs font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
                                 <Plus className="mr-2 h-5 w-5" />
-                                Create First Script
+                                Open Workspace
                             </Button>
                         </Link>
                     </div>

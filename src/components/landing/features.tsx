@@ -4,51 +4,64 @@ import {
     Layout,
     Cpu,
     CheckCircle2,
-    Globe
+    Globe,
+    FlaskConical,
+    Microscope,
+    Atom,
+    Dna,
+    Activity,
+    Beaker
 } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 const features = [
     {
-        title: 'AI Generation',
-        description: 'Powered by GPT-4o for the most creative and context-aware scripts.',
-        icon: Cpu,
+        title: 'Creative Engine',
+        description: 'GPT-4o powered generation engineered for distinct platform nuances.',
+        icon: FlaskConical,
+        category: 'Core'
     },
     {
-        title: 'Platform Optimized',
-        description: 'Specific formatting for YouTube chapters, hooks, and LinkedIn posts.',
+        title: 'Viral Hooks',
+        description: 'Professionally-tested structures to maximize initial viewer retention.',
         icon: Target,
+        category: 'Growth'
     },
     {
-        title: 'Tone Control',
-        description: 'Choose from 6+ professional tones to match your personal brand.',
+        title: 'Multi-Tone Synth',
+        description: '6+ professional tones calibrated for brand positioning.',
+        icon: Microscope,
+        category: 'Voice'
+    },
+    {
+        title: 'Focus Canvas',
+        description: 'Distraction-free environment conceptualized for deep script work.',
+        icon: Atom,
+        category: 'UX'
+    },
+    {
+        title: 'Pulse Analytics',
+        description: 'Integrated platform benchmarks to ensure content viability.',
+        icon: Activity,
+        category: 'Metrics'
+    },
+    {
+        title: 'Zero Latency',
+        description: 'Instant synchronization across the entire studio ecosystem.',
         icon: Zap,
-    },
-    {
-        title: 'Clean Editor',
-        description: 'Focus on your content with our distraction-free split-screen editor.',
-        icon: Layout,
-    },
-    {
-        title: 'Instant Copy',
-        description: 'Copy your generated script to clipboard with a single click.',
-        icon: CheckCircle2,
-    },
-    {
-        title: 'Cloud Storage',
-        description: 'Your scripts are automatically saved and accessible from anywhere.',
-        icon: Globe,
+        category: 'Speed'
     },
 ]
 
 export function Features() {
     return (
-        <section id="features" className="py-24 relative overflow-hidden">
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10" />
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter">Everything to go <span className="text-primary italic">Viral</span>.</h2>
-                    <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
-                        ScriptGo is packed with features designed for content creators who value speed and quality.
+        <section id="features" className="py-32 relative overflow-hidden bg-white">
+            <div className="container mx-auto px-8">
+                <div className="flex flex-col items-center text-center mb-24">
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-orange mb-4">Creative Workflow</div>
+                    <h2 className="text-5xl md:text-7xl font-black text-navy uppercase tracking-tighter mb-6">Built For <br /> Serious Creators.</h2>
+                    <p className="text-muted-foreground text-xl max-w-2xl font-medium">
+                        Our studio workspace is optimized for creators who treat content as a professional discipline.
                     </p>
                 </div>
 
@@ -58,13 +71,16 @@ export function Features() {
                         return (
                             <div
                                 key={idx}
-                                className="p-8 rounded-3xl card card-hover transition-all duration-300 group"
+                                className="premium-card p-10 bg-white group hover:border-orange/30 transition-all duration-500"
                             >
-                                <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 border border-primary/10 group-hover:bg-primary/20 transition-all duration-500">
-                                    <Icon className="h-7 w-7 text-primary" />
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="w-14 h-14 rounded-2xl bg-soft flex items-center justify-center text-navy group-hover:bg-navy group-hover:text-white transition-all duration-500 shadow-soft">
+                                        <Icon className="h-6 w-6" />
+                                    </div>
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 group-hover:text-orange transition-colors">{feature.category}</span>
                                 </div>
-                                <h3 className="text-2xl font-bold mb-3 tracking-tight">{feature.title}</h3>
-                                <p className="text-muted-foreground leading-relaxed text-[15px]">
+                                <h3 className="text-xl font-black text-navy uppercase mb-4 tracking-tight">{feature.title}</h3>
+                                <p className="text-muted-foreground font-medium leading-relaxed text-sm">
                                     {feature.description}
                                 </p>
                             </div>

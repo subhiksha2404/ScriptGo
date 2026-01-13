@@ -1,62 +1,76 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Sparkles, ArrowRight, Video, Linkedin, Zap } from 'lucide-react'
+import { ArrowRight, Video, Linkedin, Target, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 export function Hero() {
     return (
-        <section className="relative pt-32 pb-20 overflow-hidden">
-            {/* Background Decor */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse delay-700" />
+        <section className="relative min-h-[90vh] flex items-center pt-32 pb-20 overflow-hidden">
+            {/* Aesthetic Background Elements */}
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-navy/[0.02] rounded-full blur-[120px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange/[0.02] rounded-full blur-[120px]" />
+
+            <div className="container mx-auto px-8 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    {/* Left Content */}
+                    <div className="flex flex-col items-start text-left">
+                        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white border border-border shadow-soft mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <img src="/assets/logo.png" alt="Logo" className="h-5 w-auto" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-navy">GPT-4o Creative Agent v2.0</span>
+                        </div>
+
+                        <h1 className="text-5xl md:text-8xl font-black tracking-[-0.04em] text-navy uppercase leading-[0.9] mb-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-100">
+                            Content <span className="text-orange">Refined</span> <br /> Into Growth.
+                        </h1>
+
+                        <p className="max-w-xl text-xl text-muted-foreground font-medium mb-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200 leading-relaxed">
+                            ScriptGo transforms abstract ideas into high-performance viral scripts. Engineered for professional creators on YouTube, LinkedIn, and TikTok.
+                        </p>
+
+                        <div className="flex flex-wrap gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+                            <Link href="/login">
+                                <Button className="h-16 px-10 rounded-2xl bg-navy hover:bg-navy/90 text-white text-xs font-black uppercase tracking-widest shadow-premium group transition-all hover:scale-105 active:scale-95">
+                                    Start Creating
+                                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+                            <Button variant="outline" className="h-16 px-10 rounded-2xl border-2 border-border text-xs font-black uppercase tracking-widest hover:bg-soft transition-all">
+                                View Workflow
+                            </Button>
+                        </div>
+
+                        {/* Stats/Metrics */}
+                        <div className="mt-16 flex gap-12 border-t border-border pt-12 animate-in fade-in duration-1000 delay-500">
+                            <div>
+                                <div className="text-3xl font-black text-navy uppercase tracking-tighter">1.2M+</div>
+                                <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Scripts Generated</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-black text-navy uppercase tracking-tighter">48ms</div>
+                                <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-1">Avg Latency</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Illustration */}
+                    <div className="relative hidden lg:block animate-in fade-in zoom-in duration-1000 delay-300">
+                        <div className="relative z-10 w-full aspect-square rounded-[4rem] overflow-hidden shadow-premium border-4 border-white transform hover:rotate-2 transition-transform duration-700">
+                            <img
+                                src="/assets/hero-illustration.png"
+                                alt="Content Agent Illustration"
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        {/* Decorative floating elements */}
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-orange/10 rounded-full blur-3xl opacity-50" />
+                        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-navy/5 rounded-full blur-3xl opacity-50" />
+                    </div>
+                </div>
             </div>
 
-            <div className="container mx-auto px-4 text-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <Zap className="h-4 w-4" />
-                    <span>New: GPT-4o Powered Generation</span>
-                </div>
-
-                <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-tr from-white via-white to-primary/50 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                    Viral Scripts <span className="text-primary italic">Refined</span>.
-                </h1>
-
-                <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                    ScriptGo uses advanced AI to craft high-conversion scripts for YouTube and LinkedIn. Stop staring at a blank page and start creating.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
-                    <Link href="/login">
-                        <Button size="lg" className="h-14 px-10 text-lg font-bold btn-primary group rounded-full">
-                            Get Started for Free
-                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                    </Link>
-                    <Link href="#features">
-                        <Button variant="outline" size="lg" className="h-14 px-10 text-lg font-bold rounded-full border-primary/20 hover:bg-primary/5">
-                            Play Demo
-                        </Button>
-                    </Link>
-                </div>
-
-                {/* Platform Display */}
-                <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 animate-in fade-in duration-1000 delay-500">
-                    <div className="flex items-center gap-2">
-                        <Video className="h-8 w-8" />
-                        <span className="text-2xl font-bold">YouTube</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Linkedin className="h-8 w-8" />
-                        <span className="text-2xl font-bold">LinkedIn</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Sparkles className="h-8 w-8" />
-                        <span className="text-2xl font-bold">TIKTOK</span>
-                    </div>
-                </div>
-            </div>
+            {/* Mesh Gradient Background Texture */}
+            <div className="absolute inset-0 bg-mesh opacity-[0.03] pointer-events-none" />
         </section>
     )
 }
