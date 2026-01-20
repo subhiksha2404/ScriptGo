@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { sendWelcomeEmail, sendPasswordResetEmail } from '@/lib/email'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function login(formData: FormData) {
     const email = formData.get('email') as string

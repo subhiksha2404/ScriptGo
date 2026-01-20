@@ -8,6 +8,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 // Use the model the user explicitly set in their last edit
 const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' })
 
+interface SingleContent {
+    visual: string
+    audio: string
+}
+
 interface CalendarEntry {
     day: number
     title: string
@@ -170,6 +175,7 @@ Overall Topic: ${topic}
 Tone: ${tone}
 Target Length: ${length}
 Language: ${language}
+Target Audience: ${targetAudience}
 Style Rule: ${languageStyle}
 Framework: ${frameworkInstructions}
 
@@ -216,7 +222,7 @@ IMPORTANT: Return ONLY valid JSON array. No markdown.`
 export async function saveScript(data: {
     id?: string
     title: string
-    content: any // SingleContent | CalendarEntry[]
+    content: SingleContent | CalendarEntry[]
     platform: string
     topic: string
     tone: string

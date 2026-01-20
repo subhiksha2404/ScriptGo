@@ -16,7 +16,6 @@ import {
     Loader2,
     Check,
     Video,
-    Plus,
     Trash2,
     X,
     ArrowRight,
@@ -149,7 +148,7 @@ function EditorContent() {
             const result = await saveScript({
                 id: scriptId || undefined,
                 title,
-                content: content as any,
+                content: content as SingleContent | CalendarEntry[],
                 platform,
                 topic,
                 tone,
@@ -208,22 +207,6 @@ function EditorContent() {
         setTimeout(() => setIsCopied(false), 2000)
     }
 
-    const updateContent = (field: 'visual' | 'audio', value: string) => {
-        if (calendarDays > 0) return
-        const newContent = { ...(content as SingleContent), [field]: value }
-        setContent(newContent)
-    }
-
-    const addRow = () => {
-        if (calendarDays > 0) return
-        setContent([...(content as ScriptRow[]), { visual: '', audio: '' }])
-    }
-
-    const removeRow = (index: number) => {
-        if (calendarDays > 0) return
-        const newContent = (content as ScriptRow[]).filter((_, i) => i !== index)
-        setContent(newContent)
-    }
 
     return (
         <div className="flex h-screen flex-col bg-transparent font-sans text-navy selection:bg-orange/20">
