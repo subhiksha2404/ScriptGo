@@ -53,59 +53,14 @@ This improves usability and keeps users informed at every step.
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** Modern web UI (light theme, responsive design)
-* **Backend:** AI-powered content generation logic
+* **Frontend:** React
+* **Backend:** supabase
 * **Email Service:** Resend API
 * **Deployment:** Netlify
 * **Version Control:** GitHub
 
 ---
 
-## 📂 Project Structure
-
-```
-scriptgo/
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   └── styles/
-├── backend/
-│   ├── api/
-│   ├── ai-engine/
-│   └── email/
-├── README.md
-└── package.json
-```
-
----
-
-## ⚙️ Setup & Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/your-username/scriptgo.git
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Add environment variables:
-
-   ```env
-   RESEND_API_KEY=your_resend_api_key
-   ```
-
-4. Run the project:
-
-   ```bash
-   npm start
-   ```
-
----
 
 ## 🎯 Project Goals
 
