@@ -93,7 +93,14 @@ export default function LoginPage({
                             />
                         </div>
                         <div className="space-y-3">
-                            <Label htmlFor="password" title="Enter your secure password" className="text-[10px] font-black uppercase tracking-widest text-navy ml-1">Access Key</Label>
+                            <div className="flex items-center justify-between ml-1">
+                                <Label htmlFor="password" title="Enter your secure password" className="text-[10px] font-black uppercase tracking-widest text-navy">Access Key</Label>
+                                {view === 'login' && (
+                                    <a href="/forgot-password" className="text-[10px] font-black uppercase tracking-widest text-orange hover:underline underline-offset-4">
+                                        Forgot?
+                                    </a>
+                                )}
+                            </div>
                             <Input
                                 id="password"
                                 name="password"

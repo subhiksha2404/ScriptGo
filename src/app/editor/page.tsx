@@ -28,7 +28,7 @@ import Image from 'next/image'
 import { generateScript, saveScript, fetchScript, deleteScript, generateCalendar } from './actions'
 import { cn } from '@/utils/cn'
 
-interface ScriptRow {
+interface SingleContent {
     visual: string
     audio: string
 }
@@ -36,7 +36,7 @@ interface ScriptRow {
 interface CalendarEntry {
     day: number
     title: string
-    script: ScriptRow[]
+    content: SingleContent
 }
 
 const platforms = [
@@ -82,13 +82,15 @@ function EditorContent() {
     const [language, setLanguage] = useState('English')
     const [framework, setFramework] = useState('None')
     const [calendarDays, setCalendarDays] = useState(0)
-    const [content, setContent] = useState<ScriptRow[] | CalendarEntry[]>([])
+    const [content, setContent] = useState<SingleContent | CalendarEntry[]>({ visual: '', audio: '' })
+    const [targetAudience, setTargetAudience] = useState('')
     const [title, setTitle] = useState('')
     const [isGenerating, setIsGenerating] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     const [isCopied, setIsCopied] = useState(false)
     const [viewingEntry, setViewingEntry] = useState<CalendarEntry | null>(null)
+    const [showVisuals, setShowVisuals] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -123,13 +125,13 @@ function EditorContent() {
         setError(null)
         try {
             if (calendarDays > 0) {
-                const result = await generateCalendar({ platform, topic, tone, length, language, framework, days: calendarDays })
+                const result = await generateCalendar({ platform, topic, tone, length, language, framework, days: calendarDays, targetAudience })
                 setTitle(`${calendarDays}-Day ${topic} Calendar`)
                 setContent(result as CalendarEntry[])
             } else {
-                const result = await generateScript({ platform, topic, tone, length, language, framework })
+                const result = await generateScript({ platform, topic, tone, length, language, framework, targetAudience })
                 setTitle(result.title)
-                setContent(result.content as ScriptRow[])
+                setContent(result.content as SingleContent)
             }
         } catch (err) {
             console.error('Error generating content:', err)
@@ -140,14 +142,14 @@ function EditorContent() {
     }
 
     const handleSave = async () => {
-        if (!content || content.length === 0) return
+        if (!content) return
         setIsSaving(true)
         setError(null)
         try {
             const result = await saveScript({
                 id: scriptId || undefined,
                 title,
-                content: content as ScriptRow[] | CalendarEntry[],
+                content: content as any,
                 platform,
                 topic,
                 tone,
@@ -190,25 +192,25 @@ function EditorContent() {
     }
 
     const handleCopy = () => {
-        if (!content || content.length === 0) return
+        if (!content) return
         let textToCopy = ''
         if (calendarDays > 0) {
             textToCopy = (content as CalendarEntry[]).map(entry =>
                 `DAY ${entry.day}: ${entry.title}\n` +
-                entry.script.map(row => `[VISUAL]: ${row.visual}\n[AUDIO]: ${row.audio}`).join('\n')
+                `[VISUAL]: ${entry.content.visual}\n[AUDIO]: ${entry.content.audio}`
             ).join('\n\n---\n\n')
         } else {
-            textToCopy = (content as ScriptRow[]).map(row => `[VISUAL]: ${row.visual}\n[AUDIO]: ${row.audio}`).join('\n\n')
+            const single = content as SingleContent
+            textToCopy = `[VISUAL]: ${single.visual}\n\n[AUDIO]: ${single.audio}`
         }
         navigator.clipboard.writeText(textToCopy)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
     }
 
-    const updateRow = (index: number, field: 'visual' | 'audio', value: string) => {
+    const updateContent = (field: 'visual' | 'audio', value: string) => {
         if (calendarDays > 0) return
-        const newContent = [...(content as ScriptRow[])]
-        newContent[index] = { ...newContent[index], [field]: value }
+        const newContent = { ...(content as SingleContent), [field]: value }
         setContent(newContent)
     }
 
@@ -319,6 +321,18 @@ function EditorContent() {
                                     </div>
 
                                     <div className="space-y-4">
+                                        <Label htmlFor="targetAudience" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Target Audience</Label>
+                                        <Input
+                                            id="targetAudience"
+                                            disabled={isGenerating}
+                                            placeholder="e.g. Aspiring Creators, Tech Enthusiasts"
+                                            value={targetAudience}
+                                            onChange={(e) => setTargetAudience(e.target.value)}
+                                            className="bg-white border-border focus:border-navy/50 transition-all h-14 rounded-2xl px-5 font-medium shadow-soft"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-4">
                                         <Label htmlFor="topic" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Core Topic</Label>
                                         <Input
                                             id="topic"
@@ -332,19 +346,21 @@ function EditorContent() {
 
                                     <div className="space-y-4">
                                         <Label htmlFor="language" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Output Language</Label>
-                                        <select
-                                            id="language"
-                                            disabled={isGenerating}
-                                            value={language}
-                                            onChange={(e) => setLanguage(e.target.value)}
-                                            className="flex h-14 w-full rounded-2xl border border-border bg-white px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-navy/50 transition-all appearance-none cursor-pointer text-navy shadow-soft"
-                                        >
-                                            {languages.map((l) => (
-                                                <option key={l} value={l} className="bg-white py-2">
-                                                    {l}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="space-y-3">
+                                            <select
+                                                id="language"
+                                                disabled={isGenerating}
+                                                value={language}
+                                                onChange={(e) => setLanguage(e.target.value)}
+                                                className="flex h-14 w-full rounded-2xl border border-border bg-white px-5 py-2 text-sm font-medium focus-visible:outline-none focus:border-navy/50 transition-all appearance-none cursor-pointer text-navy shadow-soft"
+                                            >
+                                                {languages.map((l) => (
+                                                    <option key={l} value={l} className="bg-white py-2">
+                                                        {l}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -467,7 +483,7 @@ function EditorContent() {
                             </div>
                         )}
 
-                        {!isGenerating && content && content.length > 0 && (
+                        {!isGenerating && content && (
                             <Card className="border-border bg-white shadow-premium-hover rounded-[3.52rem] overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
                                 {/* Result Header & Actions */}
                                 <div className="p-10 border-b border-border bg-soft/10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -481,6 +497,18 @@ function EditorContent() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
+                                        {calendarDays === 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => setShowVisuals(!showVisuals)}
+                                                className={cn(
+                                                    "h-12 px-6 rounded-xl border border-border text-[10px] font-black uppercase tracking-widest transition-all",
+                                                    showVisuals ? "bg-navy text-white" : "bg-white text-navy hover:bg-soft"
+                                                )}
+                                            >
+                                                {showVisuals ? 'Hide Visuals' : 'Show Visuals'}
+                                            </Button>
+                                        )}
                                         <Button
                                             variant="outline"
                                             onClick={handleCopy}
@@ -511,7 +539,7 @@ function EditorContent() {
                                 <div className="p-0">
                                     {calendarDays > 0 ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 divide-x divide-y divide-border border-t border-border">
-                                            {(content as CalendarEntry[]).map((entry, idx) => (
+                                            {Array.isArray(content) && content.map((entry, idx) => (
                                                 <div
                                                     key={idx}
                                                     onClick={() => setViewingEntry(entry)}
@@ -525,62 +553,26 @@ function EditorContent() {
                                                         {entry.title}
                                                     </h4>
                                                     <div className="space-y-2 opacity-50 italic text-sm line-clamp-3 leading-relaxed">
-                                                        &quot;{entry.script[0]?.audio}&quot;
+                                                        &quot;{entry.content.audio}&quot;
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full border-collapse">
-                                                <thead>
-                                                    <tr className="border-b border-border bg-soft/20">
-                                                        <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-navy/40 w-[35%] border-r border-border">Visual Direction</th>
-                                                        <th className="text-left py-6 px-10 text-[10px] font-black uppercase tracking-widest text-navy/40">Audio Sequence</th>
-                                                        <th className="w-16"></th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-border">
-                                                    {(content as ScriptRow[]).map((row, idx) => (
-                                                        <tr key={idx} className="group hover:bg-soft/10 transition-colors">
-                                                            <td className="align-top border-r border-border p-0">
-                                                                <textarea
-                                                                    className="w-full min-h-[160px] bg-transparent border-none p-10 text-sm leading-relaxed resize-none focus:ring-0 placeholder:text-muted-foreground/10 font-bold text-navy/70 outline-none"
-                                                                    value={row.visual}
-                                                                    onChange={(e) => updateRow(idx, 'visual', e.target.value)}
-                                                                    placeholder="Describe visual context..."
-                                                                />
-                                                            </td>
-                                                            <td className="align-top p-0">
-                                                                <textarea
-                                                                    className="w-full min-h-[160px] bg-transparent border-none p-10 text-lg md:text-xl leading-[1.7] resize-none focus:ring-0 placeholder:text-muted-foreground/10 font-black text-navy outline-none"
-                                                                    value={row.audio}
-                                                                    onChange={(e) => updateRow(idx, 'audio', e.target.value)}
-                                                                    placeholder="Input sequence text..."
-                                                                />
-                                                            </td>
-                                                            <td className="px-6 py-10 align-top">
-                                                                <button
-                                                                    onClick={() => removeRow(idx)}
-                                                                    className="text-muted-foreground/10 hover:text-destructive transition-all p-2 hover:bg-destructive/5 rounded-lg opacity-0 group-hover:opacity-100"
-                                                                >
-                                                                    <Trash2 className="h-5 w-5" />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                            <div className="p-8 border-t border-border bg-soft/5 flex justify-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={addRow}
-                                                    className="h-12 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-navy/40 hover:text-navy hover:bg-white transition-all border border-transparent hover:border-border"
-                                                >
-                                                    <Plus className="mr-2 h-4 w-4" />
-                                                    Add Script Block
-                                                </Button>
+                                        <div className="p-10 space-y-10">
+                                            {showVisuals && (
+                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-navy/40">Visual Context & Direction</Label>
+                                                    <div className="w-full min-h-[100px] bg-soft/10 border border-border rounded-[2rem] p-8 text-sm leading-relaxed font-bold text-navy/70">
+                                                        {(content as SingleContent).visual}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="space-y-4">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-navy/40">Spoken Script (Continuous Vox)</Label>
+                                                <div className="w-full min-h-[300px] text-lg md:text-2xl leading-[1.6] font-black text-navy whitespace-pre-wrap">
+                                                    {(content as SingleContent).audio}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -592,7 +584,7 @@ function EditorContent() {
                             </Card>
                         )}
 
-                        {!isGenerating && (!content || content.length === 0) && (
+                        {!isGenerating && (!content || (calendarDays === 0 && !(content as SingleContent).audio)) && (
                             <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-700">
                                 <div className="w-24 h-24 rounded-[3rem] bg-white border border-border shadow-soft flex items-center justify-center mb-10 text-muted-foreground/20">
                                     <Sparkles className="h-12 w-12" />
@@ -628,32 +620,36 @@ function EditorContent() {
                             </Button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-0 scrollbar-hide">
-                            <table className="w-full border-collapse">
-                                <thead>
-                                    <tr className="border-b border-white/10 bg-white/5 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-10">
-                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 w-[35%] border-r border-white/5">See (Visual)</th>
-                                        <th className="text-left py-4 px-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">Hear (Audio)</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {viewingEntry.script.map((row, idx) => (
-                                        <tr key={idx} className="group hover:bg-soft/20 transition-colors">
-                                            <td className="align-top border-r border-border p-8 text-[14px] leading-relaxed text-muted-foreground font-medium">
-                                                {row.visual}
-                                            </td>
-                                            <td className="align-top p-8 text-[16px] md:text-[18px] leading-[1.7] text-navy font-bold">
-                                                &quot;{row.audio}&quot;
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="flex-1 overflow-y-auto p-10 space-y-10 scrollbar-hide">
+                            {showVisuals && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-navy/40">Visual Context & Direction</Label>
+                                    <div className="w-full min-h-[100px] bg-soft/10 border border-border rounded-[2rem] p-8 text-sm leading-relaxed font-bold text-navy/70">
+                                        {viewingEntry.content.visual}
+                                    </div>
+                                </div>
+                            )}
+                            <div className="space-y-4">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-navy/40">Spoken Script (Continuous Vox)</Label>
+                                <div className="w-full min-h-[300px] text-lg md:text-2xl leading-[1.6] font-black text-navy whitespace-pre-wrap">
+                                    {viewingEntry.content.audio}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="p-6 border-t border-white/5 bg-white/5 flex justify-end gap-3">
-                            <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/10" onClick={() => {
-                                const text = viewingEntry.script.map(r => `[VISUAL]: ${r.visual}\n[AUDIO]: ${r.audio}`).join('\n\n')
+                        <div className="p-6 border-t border-border bg-soft/10 flex justify-end gap-3">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setShowVisuals(!showVisuals)}
+                                className={cn(
+                                    "h-10 px-6 rounded-xl border border-border text-[10px] font-black uppercase tracking-widest transition-all",
+                                    showVisuals ? "bg-navy text-white" : "bg-white text-navy hover:bg-soft"
+                                )}
+                            >
+                                {showVisuals ? 'Hide Visuals' : 'Show Visuals'}
+                            </Button>
+                            <Button variant="outline" size="sm" className="h-10 border-border bg-white text-navy hover:bg-soft" onClick={() => {
+                                const text = `[VISUAL]: ${viewingEntry.content.visual}\n\n[AUDIO]: ${viewingEntry.content.audio}`
                                 navigator.clipboard.writeText(text)
                                 setIsCopied(true)
                                 setTimeout(() => setIsCopied(false), 2000)
@@ -661,7 +657,7 @@ function EditorContent() {
                                 <Copy className="mr-2 h-4 w-4" />
                                 {isCopied ? 'Copied' : `Copy Day ${viewingEntry.day}`}
                             </Button>
-                            <Button size="sm" className="bg-white text-black hover:bg-white/90" onClick={() => setViewingEntry(null)}>
+                            <Button size="sm" className="h-10 bg-navy text-white hover:bg-navy/90" onClick={() => setViewingEntry(null)}>
                                 Close
                             </Button>
                         </div>
