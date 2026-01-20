@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎬 ScriptGo – AI-Powered Script Generation Platform 
+🔗 Live App: https://scriptgo.netlify.app/
 
-## Getting Started
+ScriptGo is an AI-powered web application that helps users effortlessly generate high-quality scripts for videos, voice-overs, presentations, and content creation. It focuses on **natural, conversational language**, multilingual fluency, and a **clean, user-friendly UI** designed for creators.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+### ✨ AI Script Generation
+
+* Generate **complete, ready-to-read scripts** (not bullet points)
+* Natural, human-like conversational tone
+* Optimized for real-world voice delivery
+
+### 🌍 Multilingual Support
+
+* Fluent and **conversational translations** (Tamil, Hindi, English, etc.)
+* Avoids literal or overly formal translations
+* Sounds like how people *actually speak*
+
+### 🧠 Smart Agent Experience
+
+* Central AI agent greets the user on the dashboard
+* Friendly prompt: *“Want me to help you create? Let’s start.”*
+* One-click interaction to begin script creation
+
+### 🪟 Clean & Modern UI
+
+* No right-side input panel
+* **Transparent form layout** for user input
+* Generated content appears **below the form**
+* Visual content is displayed **only when the user clicks**
+
+### 📜 Content History
+
+* All previously generated scripts are shown at the bottom of the dashboard
+* Easy access and review of past creations
+
+---
+
+## 📧 Email Notifications (Resend Integration)
+
+ScriptGo uses **Resend** to handle automated system emails:
+
+* Welcome email on user sign-up
+* Password reset email on request
+* Generated scripts sent directly to the user’s email
+
+This improves usability and keeps users informed at every step.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Frontend:** Modern web UI (light theme, responsive design)
+* **Backend:** AI-powered content generation logic
+* **Email Service:** Resend API
+* **Deployment:** Netlify
+* **Version Control:** GitHub
+
+---
+
+## 📂 Project Structure
+
+```
+scriptgo/
+├── frontend/
+│   ├── components/
+│   ├── pages/
+│   └── styles/
+├── backend/
+│   ├── api/
+│   ├── ai-engine/
+│   └── email/
+├── README.md
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Setup & Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Clone the repository:
 
-## Learn More
+   ```bash
+   git clone https://github.com/your-username/scriptgo.git
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Add environment variables:
 
-## Deploy on Vercel
+   ```env
+   RESEND_API_KEY=your_resend_api_key
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the project:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   npm start
+   ```
+
+---
+
+## 🎯 Project Goals
+
+* Make script creation **simple, fast, and human-like**
+* Support creators across languages without losing natural flow
+* Provide a distraction-free and intuitive UI
+* Deliver production-ready scripts with minimal effort
+
+---
+<img width="1912" height="905" alt="image" src="https://github.com/user-attachments/assets/0a63e66a-6f06-4e7c-ac26-a0cb0f996894" />
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+⭐ If you like this project, don’t forget to star the repository!
