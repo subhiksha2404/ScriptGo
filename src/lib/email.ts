@@ -1,8 +1,17 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResendClient = () => {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  return new Resend(key);
+};
 
 export async function sendWelcomeEmail(email: string, fullName: string) {
+  const resend = getResendClient();
+  if (!resend) {
+    console.warn('Resend API key missing. Skipping welcome email.');
+    return { success: false, error: 'API key missing' };
+  }
   try {
     const { data, error } = await resend.emails.send({
       from: 'ScriptGo <onboarding@resend.dev>',
@@ -33,6 +42,11 @@ export async function sendWelcomeEmail(email: string, fullName: string) {
 }
 
 export async function sendPasswordResetEmail(email: string, resetLink: string) {
+  const resend = getResendClient();
+  if (!resend) {
+    console.warn('Resend API key missing. Skipping password reset email.');
+    return { success: false, error: 'API key missing' };
+  }
   try {
     const { data, error } = await resend.emails.send({
       from: 'ScriptGo <auth@resend.dev>',
@@ -75,6 +89,11 @@ interface CalendarEntry {
 }
 
 export async function sendScriptReadyEmail(email: string, scriptTitle: string, scriptContent: SingleContent | CalendarEntry[]) {
+  const resend = getResendClient();
+  if (!resend) {
+    console.warn('Resend API key missing. Skipping script ready email.');
+    return { success: false, error: 'API key missing' };
+  }
   try {
     const contentHtml = Array.isArray(scriptContent)
       ? (scriptContent as CalendarEntry[]).map((row) => `
