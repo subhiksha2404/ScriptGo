@@ -15,7 +15,6 @@ import {
     ChevronLeft,
     Loader2,
     Check,
-    Video,
     Trash2,
     X,
     ArrowRight,
@@ -41,7 +40,6 @@ interface CalendarEntry {
 const platforms = [
     { id: 'YouTube', icon: Youtube, label: 'YouTube' },
     { id: 'LinkedIn', icon: Linkedin, label: 'LinkedIn' },
-    { id: 'TikTok', icon: Video, label: 'TikTok' },
     { id: 'Shorts', icon: Sparkles, label: 'Shorts' },
 ]
 
